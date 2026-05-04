@@ -11,6 +11,7 @@ class NativeControlsEnhancer {
     this.player = player;
     this.observers = [];
     this.chapterLabel = null;
+    this.timeLabel = null;
     this.isMinimal = false;
   }
 
@@ -18,6 +19,10 @@ class NativeControlsEnhancer {
     this.chapterLabel = document.createElement('div');
     this.chapterLabel.className = 'yte-chapter-label';
     this.player.appendChild(this.chapterLabel);
+
+    this.timeLabel = document.createElement('div');
+    this.timeLabel.className = 'yte-time-label';
+    this.player.appendChild(this.timeLabel);
   }
 
   updateChapterLabel() {
@@ -31,6 +36,85 @@ class NativeControlsEnhancer {
       this.chapterLabel.classList.add('yte-visible');
     } else {
       this.chapterLabel.classList.remove('yte-visible');
+    }
+  }
+
+  updateProgressBar() {
+    if (!this.isMinimal || !this.video) return;
+
+    const duration = this.video.duration;
+    if (!isFinite(duration) || duration <= 0) return;
+
+    const currentTime = this.video.currentTime;
+    const list = this.player.querySelector('.ytp-progress-list');
+    if (!list) return;
+
+    const chapters = list.querySelectorAll('.ytp-chapter-hover-container');
+
+    if (chapters.length > 0) {
+      // Chaptered: each chapter container's width % represents its share of total duration
+      let cumulative = 0;
+      chapters.forEach((container) => {
+        const widthPct = parseFloat(container.style.width) || 0;
+        const chapterDuration = (widthPct / 100) * duration;
+        const chapterStart = cumulative;
+        cumulative += chapterDuration;
+
+        let progress;
+        if (chapterDuration <= 0) progress = 0;
+        else if (currentTime >= cumulative) progress = 1;
+        else if (currentTime <= chapterStart) progress = 0;
+        else progress = (currentTime - chapterStart) / chapterDuration;
+
+        const playEl = container.querySelector('.ytp-play-progress');
+        if (playEl) {
+          playEl.style.setProperty('transform', `scaleX(${progress})`, 'important');
+        }
+      });
+    } else {
+      const playEl = list.querySelector('.ytp-play-progress');
+      if (playEl) {
+        const progress = Math.min(1, Math.max(0, currentTime / duration));
+        playEl.style.setProperty('transform', `scaleX(${progress})`, 'important');
+      }
+    }
+  }
+
+  clearProgressBarOverride() {
+    const list = this.player ? this.player.querySelector('.ytp-progress-list') : null;
+    if (!list) return;
+    list.querySelectorAll('.ytp-play-progress').forEach((el) => {
+      el.style.removeProperty('transform');
+    });
+  }
+
+  formatTime(seconds) {
+    if (!isFinite(seconds) || seconds < 0) return '';
+    const total = Math.floor(seconds);
+    const s = total % 60;
+    const m = Math.floor(total / 60) % 60;
+    const h = Math.floor(total / 3600);
+    const pad = (n) => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+
+  updateTimeLabel() {
+    if (!this.timeLabel || !this.video) return;
+
+    if (!this.isMinimal) {
+      this.timeLabel.classList.remove('yte-visible');
+      return;
+    }
+
+    const current = this.formatTime(this.video.currentTime);
+    const duration = this.formatTime(this.video.duration);
+    const text = duration ? `${current} / ${duration}` : current;
+
+    if (text) {
+      this.timeLabel.textContent = text;
+      this.timeLabel.classList.add('yte-visible');
+    } else {
+      this.timeLabel.classList.remove('yte-visible');
     }
   }
 
@@ -59,6 +143,8 @@ class NativeControlsEnhancer {
     this.fadeTo(scrubber, 0, 600);
 
     this.updateChapterLabel();
+    this.updateTimeLabel();
+    this.updateProgressBar();
   }
 
   exitMinimal() {
@@ -68,11 +154,14 @@ class NativeControlsEnhancer {
     const gradient = this.player.querySelector('.ytp-gradient-bottom');
     const scrubber = this.player.querySelector('.ytp-scrubber-container');
 
+    this.clearProgressBarOverride();
+
     this.fadeTo(controls, 1, 600);
     this.fadeTo(gradient, 1, 600);
     this.fadeTo(scrubber, 1, 400);
 
     this.updateChapterLabel();
+    this.updateTimeLabel();
   }
 
   setupObservers() {
@@ -93,6 +182,16 @@ class NativeControlsEnhancer {
       attributeFilter: ['class']
     });
     this.observers.push(autohideObserver);
+
+    // Drive time-label updates directly off the video element so they fire
+    // even while controls are auto-hidden (YouTube only updates the DOM
+    // .ytp-time-display when controls are visible).
+    this.timeUpdateHandler = () => {
+      this.updateTimeLabel();
+      this.updateProgressBar();
+    };
+    this.video.addEventListener('timeupdate', this.timeUpdateHandler);
+    this.video.addEventListener('durationchange', this.timeUpdateHandler);
 
     // Watch for chapter text changes
     const chapterObserver = new MutationObserver(() => {
@@ -119,6 +218,8 @@ class NativeControlsEnhancer {
       if (gradient) gradient.style.setProperty('opacity', '0', 'important');
       if (scrubber) scrubber.style.setProperty('opacity', '0', 'important');
       this.updateChapterLabel();
+      this.updateTimeLabel();
+      this.updateProgressBar();
     }
   }
 
@@ -141,10 +242,23 @@ class NativeControlsEnhancer {
     if (gradient) { gradient.style.removeProperty('opacity'); gradient.style.removeProperty('transition'); }
     if (scrubber) { scrubber.style.removeProperty('opacity'); scrubber.style.removeProperty('transition'); }
 
+    this.clearProgressBarOverride();
+
     if (this.chapterLabel && this.chapterLabel.parentNode) {
       this.chapterLabel.parentNode.removeChild(this.chapterLabel);
     }
     this.chapterLabel = null;
+
+    if (this.timeLabel && this.timeLabel.parentNode) {
+      this.timeLabel.parentNode.removeChild(this.timeLabel);
+    }
+    this.timeLabel = null;
+
+    if (this.video && this.timeUpdateHandler) {
+      this.video.removeEventListener('timeupdate', this.timeUpdateHandler);
+      this.video.removeEventListener('durationchange', this.timeUpdateHandler);
+    }
+    this.timeUpdateHandler = null;
 
     this.observers.forEach(observer => observer.disconnect());
     this.observers = [];
