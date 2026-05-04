@@ -6,33 +6,40 @@
 /* ==================== Native Controls: Minimal Mode ==================== */
 
 /*
- * When YouTube auto-hides controls, we override to keep the progress bar
- * visible in a minimal (thin) state while hiding buttons and gradient.
- * The .yte-minimal-controls class lives on <html> to avoid interfering
- * with YouTube's own class watchers on #movie_player.
+ * Autohide overrides: keep progress bar visible, hide the rest.
+ * Animations are handled by JS (Web Animations API) for smooth transitions
+ * since YouTube's own CSS conflicts prevent CSS transitions from working.
  */
 
-/* Keep the bottom chrome visible and pin it to the very bottom */
-.yte-minimal-controls .ytp-chrome-bottom {
+/* Keep bottom chrome visible */
+#movie_player.ytp-autohide .ytp-chrome-bottom {
   opacity: 1 !important;
   bottom: 0 !important;
 }
 
-/*
- * Use visibility:hidden on controls so children can override with visibility:visible.
- * (opacity:0 on a parent cannot be overridden by children — it's multiplicative)
- */
-/* Make controls invisible but remove its positioning context so
- * the chapter container's absolute position anchors to .ytp-chrome-bottom */
-.yte-minimal-controls .ytp-chrome-controls {
-  visibility: hidden !important;
+/* Hide controls (JS animates the opacity, CSS ensures final state) */
+#movie_player.ytp-autohide .ytp-chrome-controls {
   pointer-events: none !important;
   position: static !important;
 }
 
-/* Floating chapter label — direct child of #movie_player, fully independent */
+/* Keep progress bar visible and pin to bottom */
+#movie_player.ytp-autohide .ytp-progress-bar-container {
+  opacity: 1 !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 99 !important;
+}
+
+/* Hide time display */
+#movie_player.ytp-autohide .ytp-time-display {
+  opacity: 0 !important;
+}
+
+/* ---- Floating chapter label ---- */
 .yte-chapter-label {
-  display: none;
   position: absolute;
   bottom: 8px;
   left: 12px;
@@ -47,31 +54,12 @@
   backdrop-filter: blur(12px);
   border-radius: 4px;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Pull the progress bar to the very bottom of the player */
-.yte-minimal-controls .ytp-progress-bar-container {
-  opacity: 1 !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 99 !important;
-}
-
-/* Hide the scrubber dot */
-.yte-minimal-controls .ytp-scrubber-container {
-  display: none !important;
-}
-
-/* Hide the dark gradient overlay at the bottom */
-.yte-minimal-controls .ytp-gradient-bottom {
-  opacity: 0 !important;
-}
-
-/* Hide the time display */
-.yte-minimal-controls .ytp-time-display {
-  opacity: 0 !important;
+.yte-chapter-label.yte-visible {
+  opacity: 1;
 }
 
 /* ==================== Volume Indicator ==================== */
