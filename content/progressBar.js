@@ -41,22 +41,39 @@ class NativeControlsEnhancer {
 
   updateProgressBar() {
     if (!this.isMinimal || !this.video) return;
+    this.applyProgress(true);
+  }
 
+  applyProgress(important) {
     const duration = this.video.duration;
     if (!isFinite(duration) || duration <= 0) return;
 
     const currentTime = this.video.currentTime;
-    const list = this.player.querySelector('.ytp-progress-list');
-    if (!list) return;
+    const progressBar = this.player.querySelector('.ytp-progress-bar');
+    if (!progressBar) return;
 
-    const chapters = list.querySelectorAll('.ytp-chapter-hover-container');
+    const setT = (el, v) => {
+      const value = `scaleX(${v})`;
+      if (important) {
+        el.style.setProperty('transform', value, 'important');
+      } else {
+        // Empty priority replaces an !important inline value with a normal one
+        el.style.setProperty('transform', value, '');
+      }
+    };
+
+    const chapters = progressBar.querySelectorAll('.ytp-chapter-hover-container');
 
     if (chapters.length > 0) {
-      // Chaptered: each chapter container's width % represents its share of total duration
+      // Each chapter container's inline width (px) is its share of the total duration.
+      // Pixel values are arbitrary — what matters is each chapter's width / sum-of-widths.
+      const widths = Array.from(chapters).map((c) => parseFloat(c.style.width) || 0);
+      const totalWidth = widths.reduce((a, b) => a + b, 0);
+      if (totalWidth <= 0) return;
+
       let cumulative = 0;
-      chapters.forEach((container) => {
-        const widthPct = parseFloat(container.style.width) || 0;
-        const chapterDuration = (widthPct / 100) * duration;
+      chapters.forEach((container, i) => {
+        const chapterDuration = (widths[i] / totalWidth) * duration;
         const chapterStart = cumulative;
         cumulative += chapterDuration;
 
@@ -67,23 +84,31 @@ class NativeControlsEnhancer {
         else progress = (currentTime - chapterStart) / chapterDuration;
 
         const playEl = container.querySelector('.ytp-play-progress');
-        if (playEl) {
-          playEl.style.setProperty('transform', `scaleX(${progress})`, 'important');
-        }
+        if (playEl) setT(playEl, progress);
       });
     } else {
-      const playEl = list.querySelector('.ytp-play-progress');
+      // Non-chaptered fallback: single global play-progress
+      const playEl = progressBar.querySelector('.ytp-play-progress');
       if (playEl) {
         const progress = Math.min(1, Math.max(0, currentTime / duration));
-        playEl.style.setProperty('transform', `scaleX(${progress})`, 'important');
+        setT(playEl, progress);
       }
     }
   }
 
+  releaseProgressBar() {
+    // Demote our !important override to a normal inline value at the current
+    // progress, so YouTube's next update can overwrite without a flash.
+    if (!this.video) return this.clearProgressBarOverride();
+    const duration = this.video.duration;
+    if (!isFinite(duration) || duration <= 0) return this.clearProgressBarOverride();
+    this.applyProgress(false);
+  }
+
   clearProgressBarOverride() {
-    const list = this.player ? this.player.querySelector('.ytp-progress-list') : null;
-    if (!list) return;
-    list.querySelectorAll('.ytp-play-progress').forEach((el) => {
+    const progressBar = this.player ? this.player.querySelector('.ytp-progress-bar') : null;
+    if (!progressBar) return;
+    progressBar.querySelectorAll('.ytp-play-progress').forEach((el) => {
       el.style.removeProperty('transform');
     });
   }
@@ -154,7 +179,7 @@ class NativeControlsEnhancer {
     const gradient = this.player.querySelector('.ytp-gradient-bottom');
     const scrubber = this.player.querySelector('.ytp-scrubber-container');
 
-    this.clearProgressBarOverride();
+    this.releaseProgressBar();
 
     this.fadeTo(controls, 1, 600);
     this.fadeTo(gradient, 1, 600);
