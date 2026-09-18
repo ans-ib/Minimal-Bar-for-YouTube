@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimal Bar for YouTube</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="panel">
+    <header class="header">
+      <img class="logo" src="../icons/icon48.png" alt="" width="24" height="24">
+      <h1>Minimal Bar for YouTube</h1>
+    </header>
+
+    <section class="row row-switch">
+      <div class="row-text">
+        <label for="scrollVolume">Scroll to change volume</label>
+        <p class="hint">Mouse wheel over the video adjusts volume in 5% steps.</p>
+      </div>
+      <input type="checkbox" id="scrollVolume" class="switch" role="switch">
+    </section>
+
+    <section class="row row-slider">
+      <div class="row-head">
+        <label for="barHeight">Bar thickness</label>
+        <output id="barHeightValue" for="barHeight">3 px</output>
+      </div>
+      <input type="range" id="barHeight" step="1">
+    </section>
+
+    <section class="row row-slider">
+      <div class="row-head">
+        <label for="labelFontSize">Label text size</label>
+        <output id="labelFontSizeValue" for="labelFontSize">12 px</output>
+      </div>
+      <input type="range" id="labelFontSize" step="1">
+      <p class="hint">Chapter name and time shown while the controls are hidden.</p>
+    </section>
+
+    <footer class="footer">
+      <button type="button" id="reset" class="link">Reset to defaults</button>
+      <span id="status" class="status" aria-live="polite"></span>
+    </footer>
+  </main>
+
+  <script src="../common/settings.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

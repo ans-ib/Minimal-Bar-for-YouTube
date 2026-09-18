@@ -1,75 +1,88 @@
 /*
- * YouTube Enhancer - Styles
- * All custom classes prefixed with 'yte-' to avoid conflicts
+ * Minimal Bar for YouTube - Styles
+ * All custom classes are prefixed with 'yte-' to avoid conflicts.
+ *
+ * Design note: we do NOT override any of YouTube's chrome positioning. The
+ * minimal-mode UI lives entirely on our own overlay layer, which is fade-toggled
+ * by `.ytp-autohide` via plain CSS opacity. This avoids the layout reflows that
+ * caused video stutter when controls auto-hid in the previous design.
  */
 
-/* ==================== Native Controls: Minimal Mode ==================== */
+/* ==================== Minimal-mode overlay ==================== */
 
-/*
- * Autohide overrides: keep progress bar visible, hide the rest.
- * Animations are handled by JS (Web Animations API) for smooth transitions
- * since YouTube's own CSS conflicts prevent CSS transitions from working.
- */
-
-/* Keep bottom chrome visible */
-#movie_player.ytp-autohide .ytp-chrome-bottom {
-  opacity: 1 !important;
-  bottom: 0 !important;
+.yte-progress-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--yte-bar-height, 3px);
+  z-index: 99;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hide controls (JS animates the opacity, CSS ensures final state) */
-#movie_player.ytp-autohide .ytp-chrome-controls {
-  pointer-events: none !important;
-  position: static !important;
+#movie_player.ytp-autohide .yte-progress-overlay {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* Keep progress bar visible and pin to bottom */
-#movie_player.ytp-autohide .ytp-progress-bar-container {
-  opacity: 1 !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 99 !important;
+.yte-progress-segment {
+  position: relative;
+  height: 100%;
+  flex-basis: 0;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
 }
 
-/* Hide time display */
-#movie_player.ytp-autohide .ytp-time-display {
-  opacity: 0 !important;
+.yte-progress-fill {
+  position: absolute;
+  inset: 0;
+  background: #f00;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
 }
 
-/* ---- Floating chapter label ---- */
+/* ---- Floating chapter / time labels ---- */
+
 .yte-chapter-label,
 .yte-time-label {
   position: absolute;
-  bottom: 8px;
+  bottom: calc(var(--yte-bar-height, 3px) + 9px);
   z-index: 100;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--yte-label-font-size, 12px);
   font-weight: 500;
   font-family: 'YouTube Noto', 'Roboto', Arial, sans-serif;
-  padding: 3px 10px;
-  background: rgba(0, 0, 0, 0.55);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  padding: 0.25em 0.8em;
+  background: rgba(0, 0, 0, 0.72);
   border-radius: 4px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.yte-chapter-label {
-  left: 12px;
-}
+.yte-chapter-label { left: 12px; }
+.yte-time-label    { right: 12px; font-variant-numeric: tabular-nums; }
 
-.yte-time-label {
-  right: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.yte-chapter-label.yte-visible,
-.yte-time-label.yte-visible {
+#movie_player.ytp-autohide .yte-chapter-label.yte-has-text,
+#movie_player.ytp-autohide .yte-time-label.yte-has-text {
   opacity: 1;
+}
+
+/* Hide the overlay while an ad plays: its duration/chapters don't match the video. */
+#movie_player.ad-showing .yte-progress-overlay,
+#movie_player.ad-interrupting .yte-progress-overlay,
+#movie_player.ad-showing .yte-chapter-label,
+#movie_player.ad-interrupting .yte-chapter-label,
+#movie_player.ad-showing .yte-time-label,
+#movie_player.ad-interrupting .yte-time-label {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ==================== Volume Indicator ==================== */
@@ -106,8 +119,13 @@
 }
 
 .yte-volume-icon svg {
+  display: none;
   width: 100%;
   height: 100%;
+}
+
+.yte-volume-icon svg.yte-active {
+  display: block;
 }
 
 .yte-volume-bars {
@@ -150,6 +168,9 @@
 /* ==================== Reduced motion ==================== */
 
 @media (prefers-reduced-motion: reduce) {
+  .yte-progress-overlay,
+  .yte-chapter-label,
+  .yte-time-label,
   .yte-volume-feedback {
     transition: none;
   }

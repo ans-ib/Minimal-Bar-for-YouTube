@@ -1,152 +1,89 @@
 /**
- * YouTubeDetector - Detects and monitors YouTube video player
- * Handles YouTube's SPA (Single Page Application) navigation
+ * YouTubeDetector - finds the main player and its <video>, and re-checks on
+ * YouTube's single-page-app navigation events.
+ *
+ * The video is looked up *inside* #movie_player so that YouTube's inline
+ * preview players (which use the same video class) are never picked up.
  */
 class YouTubeDetector {
+  static NAV_SETTLE_MS = 100;
+
   constructor() {
     this.video = null;
     this.player = null;
-    this.observers = [];
-    this.onVideoFoundCallback = null;
+    this.callback = null;
+    this.observer = null;
+    this.navTimer = 0;
+    this.handleNavigate = this.handleNavigate.bind(this);
   }
 
-  /**
-   * Find the video element
-   * @returns {HTMLVideoElement|null}
-   */
-  findVideoElement() {
-    return document.querySelector('video.html5-main-video');
-  }
-
-  /**
-   * Find the player container
-   * @returns {HTMLElement|null}
-   */
   findPlayerContainer() {
-    return document.querySelector('#movie_player');
+    return document.getElementById('movie_player');
   }
 
-  /**
-   * Check if we're on a video page
-   * @returns {boolean}
-   */
+  findVideoElement(player) {
+    return player ? player.querySelector('video.html5-main-video') : null;
+  }
+
   isVideoPage() {
     return window.location.pathname === '/watch';
   }
 
   /**
-   * Setup mutation observer to watch for video element changes
-   * @param {Function} callback
+   * Invoke the callback if a player and video exist on a watch page.
+   * @param {boolean} force - call back even if the elements are unchanged
+   *   (used after navigation, where the same elements host a new video)
    */
-  setupMutationObserver(callback) {
-    const observer = new MutationObserver((mutations) => {
-      // Only check if we're on a video page
-      if (!this.isVideoPage()) {
-        return;
-      }
+  check(force) {
+    if (!this.isVideoPage()) return;
+    const player = this.findPlayerContainer();
+    const video = this.findVideoElement(player);
+    if (!player || !video) return;
+    if (!force && video === this.video && player === this.player) return;
+    this.video = video;
+    this.player = player;
+    this.callback(video, player);
+  }
 
-      const video = this.findVideoElement();
-      const player = this.findPlayerContainer();
-
-      if (video && player && video !== this.video) {
-        this.video = video;
-        this.player = player;
-        callback(video, player);
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    this.observers.push(observer);
-    return observer;
+  handleNavigate() {
+    clearTimeout(this.navTimer);
+    this.navTimer = setTimeout(() => this.check(true), YouTubeDetector.NAV_SETTLE_MS);
   }
 
   /**
-   * Setup YouTube navigation event listeners
-   * Handles SPA navigation (yt-navigate-finish event)
-   * @param {Function} callback
-   */
-  setupYouTubeEventListeners(callback) {
-    // YouTube fires 'yt-navigate-finish' on page changes
-    document.addEventListener('yt-navigate-finish', () => {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        if (!this.isVideoPage()) {
-          return;
-        }
-
-        const video = this.findVideoElement();
-        const player = this.findPlayerContainer();
-
-        if (video && player) {
-          this.video = video;
-          this.player = player;
-          callback(video, player);
-        }
-      }, 100);
-    });
-
-    // Also listen for 'yt-page-data-updated' (older YouTube versions)
-    document.addEventListener('yt-page-data-updated', () => {
-      setTimeout(() => {
-        if (!this.isVideoPage()) {
-          return;
-        }
-
-        const video = this.findVideoElement();
-        const player = this.findPlayerContainer();
-
-        if (video && player) {
-          this.video = video;
-          this.player = player;
-          callback(video, player);
-        }
-      }, 100);
-    });
-  }
-
-  /**
-   * Initialize video detection
-   * @param {Function} onVideoFound - Callback called when video is found (receives video and player elements)
+   * @param {(video: HTMLVideoElement, player: HTMLElement) => void} onVideoFound
    */
   init(onVideoFound) {
-    if (!onVideoFound || typeof onVideoFound !== 'function') {
+    if (typeof onVideoFound !== 'function') {
       console.error('YouTubeDetector: onVideoFound callback is required');
       return;
     }
+    this.callback = onVideoFound;
 
-    this.onVideoFoundCallback = onVideoFound;
+    // Direct page load.
+    this.check(true);
 
-    // Try immediate detection (for direct page loads)
-    if (this.isVideoPage()) {
-      const video = this.findVideoElement();
-      const player = this.findPlayerContainer();
+    // Player inserted later. Once we hold connected elements this is a
+    // near-free early return, so YouTube's constant DOM churn costs nothing.
+    this.observer = new MutationObserver(() => {
+      if (this.video && this.video.isConnected && this.player && this.player.isConnected) return;
+      this.check(false);
+    });
+    this.observer.observe(document.body, { childList: true, subtree: true });
 
-      if (video && player) {
-        this.video = video;
-        this.player = player;
-        onVideoFound(video, player);
-      }
-    }
-
-    // Setup continuous monitoring for SPA navigation
-    this.setupMutationObserver(onVideoFound);
-    this.setupYouTubeEventListeners(onVideoFound);
-
-    console.log('YouTubeDetector: Initialized');
+    // SPA navigation between videos.
+    document.addEventListener('yt-navigate-finish', this.handleNavigate);
+    document.addEventListener('yt-page-data-updated', this.handleNavigate);
   }
 
-  /**
-   * Cleanup observers
-   */
   cleanup() {
-    this.observers.forEach(observer => observer.disconnect());
-    this.observers = [];
+    if (this.observer) this.observer.disconnect();
+    this.observer = null;
+    clearTimeout(this.navTimer);
+    document.removeEventListener('yt-navigate-finish', this.handleNavigate);
+    document.removeEventListener('yt-page-data-updated', this.handleNavigate);
     this.video = null;
     this.player = null;
-    console.log('YouTubeDetector: Cleaned up');
+    this.callback = null;
   }
 }

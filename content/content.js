@@ -1,153 +1,111 @@
 /**
- * YouTube Enhancer - Main Content Script
- * Coordinates all features and initializes them when video is detected
+ * Main content script: loads settings, wires the detector to the features,
+ * and re-initialises them when YouTube navigates to a different video.
  */
-(function() {
+(function () {
   'use strict';
 
-  // Feature instances
+  let settings = null;
   let currentVideo = null;
   let currentPlayer = null;
-  let currentVideoUrl = null;
+  let currentVideoId = null;
   let controlsEnhancer = null;
   let scrollVolume = null;
-  let detector = null;
 
-  /**
-   * Initialize all features for a detected video
-   * @param {HTMLVideoElement} video
-   * @param {HTMLElement} player
-   */
+  function getVideoId() {
+    try {
+      return new URL(window.location.href).searchParams.get('v') || window.location.href;
+    } catch (e) {
+      return window.location.href;
+    }
+  }
+
+  function startScrollVolume() {
+    if (scrollVolume || !currentVideo || !settings || !settings.scrollVolume) return;
+    try {
+      scrollVolume = new ScrollVolumeControl(currentVideo, currentPlayer);
+      scrollVolume.init();
+    } catch (e) {
+      console.error('[YTE] Failed to initialise scroll volume', e);
+      scrollVolume = null;
+    }
+  }
+
+  function stopScrollVolume() {
+    if (!scrollVolume) return;
+    try { scrollVolume.cleanup(); } catch (e) { console.error('[YTE] Cleanup error', e); }
+    scrollVolume = null;
+  }
+
   function initializeFeatures(video, player) {
-    const newUrl = window.location.href;
-
-    // Only skip if same video element AND same URL
-    if (video === currentVideo && player === currentPlayer && newUrl === currentVideoUrl) {
+    const videoId = getVideoId();
+    if (video === currentVideo && player === currentPlayer && videoId === currentVideoId) {
       return;
     }
 
-    console.log('YouTube Enhancer: Initializing features for new video');
-
-    // Cleanup previous instances
     cleanup();
-
-    // Update references
     currentVideo = video;
     currentPlayer = player;
-    currentVideoUrl = newUrl;
+    currentVideoId = videoId;
 
-    // Initialize native controls enhancer
     try {
       controlsEnhancer = new NativeControlsEnhancer(video, player);
       controlsEnhancer.init();
     } catch (e) {
-      console.error('YouTube Enhancer: Failed to initialize controls enhancer', e);
-    }
-
-    // Initialize scroll volume control
-    try {
-      scrollVolume = new ScrollVolumeControl(video, player);
-      scrollVolume.init();
-    } catch (e) {
-      console.error('YouTube Enhancer: Failed to initialize scroll volume', e);
-    }
-
-    console.log('YouTube Enhancer: All features initialized successfully');
-  }
-
-  /**
-   * Cleanup all features
-   */
-  function cleanup() {
-    console.log('YouTube Enhancer: Cleaning up features');
-
-    // Cleanup controls enhancer
-    if (controlsEnhancer) {
-      try {
-        controlsEnhancer.cleanup();
-      } catch (e) {
-        console.error('YouTube Enhancer: Error cleaning up controls enhancer', e);
-      }
+      console.error('[YTE] Failed to initialise progress overlay', e);
       controlsEnhancer = null;
     }
 
-    // Cleanup scroll volume
-    if (scrollVolume) {
-      try {
-        scrollVolume.cleanup();
-      } catch (e) {
-        console.error('YouTube Enhancer: Error cleaning up scroll volume', e);
-      }
-      scrollVolume = null;
-    }
+    startScrollVolume();
+  }
 
-    // Remove any leftover elements
-    const existingVolumeFeedback = document.getElementById('yte-volume-feedback');
-    if (existingVolumeFeedback) {
-      existingVolumeFeedback.remove();
+  function cleanup() {
+    if (controlsEnhancer) {
+      try { controlsEnhancer.cleanup(); } catch (e) { console.error('[YTE] Cleanup error', e); }
+      controlsEnhancer = null;
     }
+    stopScrollVolume();
+    const leftover = document.getElementById('yte-volume-feedback');
+    if (leftover) leftover.remove();
 
     currentVideo = null;
     currentPlayer = null;
-    currentVideoUrl = null;
+    currentVideoId = null;
   }
 
-  /**
-   * Initialize the extension
-   */
+  /** Apply settings immediately, including on a video already playing. */
+  function applySettings(next) {
+    settings = next;
+    YteSettings.applyToDocument(settings);
+    if (settings.scrollVolume) startScrollVolume();
+    else stopScrollVolume();
+  }
+
   function initialize() {
-    console.log('YouTube Enhancer: Starting initialization');
-
-    // Check if classes are available
-    if (typeof YouTubeDetector === 'undefined') {
-      console.error('YouTube Enhancer: YouTubeDetector class not found');
+    if (
+      typeof YteSettings === 'undefined' ||
+      typeof YouTubeDetector === 'undefined' ||
+      typeof NativeControlsEnhancer === 'undefined' ||
+      typeof ScrollVolumeControl === 'undefined'
+    ) {
+      console.error('[YTE] A required script failed to load');
       return;
     }
 
-    if (typeof NativeControlsEnhancer === 'undefined') {
-      console.error('YouTube Enhancer: NativeControlsEnhancer class not found');
-      return;
-    }
-
-    if (typeof ScrollVolumeControl === 'undefined') {
-      console.error('YouTube Enhancer: ScrollVolumeControl class not found');
-      return;
-    }
-
-    // Create detector instance
-    detector = new YouTubeDetector();
-
-    // Initialize detector with callback
-    detector.init((video, player) => {
-      initializeFeatures(video, player);
+    // Settings are read before the first video is wired up so a disabled
+    // feature never flashes on. The read is a few milliseconds.
+    YteSettings.load().then((loaded) => {
+      applySettings(loaded);
+      YteSettings.onChange(applySettings);
+      new YouTubeDetector().init(initializeFeatures);
     });
-
-    console.log('YouTube Enhancer: Extension initialized');
   }
 
-  // Handle page unload
-  window.addEventListener('beforeunload', () => {
-    cleanup();
-    if (detector) {
-      detector.cleanup();
-    }
-  });
-
-  // Handle extension unload (for development)
-  window.addEventListener('unload', () => {
-    cleanup();
-    if (detector) {
-      detector.cleanup();
-    }
-  });
-
-  // Start the extension
+  // No unload/beforeunload handlers: the document teardown releases everything,
+  // and an `unload` listener would make YouTube ineligible for back/forward cache.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
+    document.addEventListener('DOMContentLoaded', initialize, { once: true });
   } else {
-    // DOM already loaded
     initialize();
   }
-
-  console.log('YouTube Enhancer: Content script loaded');
 })();

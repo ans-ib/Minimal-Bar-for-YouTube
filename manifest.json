@@ -1,16 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Enhancer",
+  "name": "Minimal Bar for YouTube",
   "version": "1.0.0",
-  "description": "Enhances YouTube with always-visible native controls and scroll-to-volume",
-  "permissions": [],
-  "host_permissions": [
-    "*://*.youtube.com/*"
-  ],
+  "description": "Minimal progress bar with chapter and time labels while YouTube's controls are hidden, plus mouse-wheel volume over the video.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Minimal Bar for YouTube settings"
+  },
+  "options_ui": {
+    "page": "popup/popup.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content/inject.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
       "js": [
+        "common/settings.js",
         "content/youtubeDetector.js",
         "content/progressBar.js",
         "content/scrollVolume.js",
@@ -18,17 +36,6 @@
       ],
       "css": ["styles/content.css"],
       "run_at": "document_end"
-    },
-    {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["content/inject.js"],
-      "world": "MAIN",
-      "run_at": "document_start"
     }
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+  ]
 }

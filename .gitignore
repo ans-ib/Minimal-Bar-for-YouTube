@@ -1,0 +1,9 @@
+# Packaged zips for the Chrome Web Store
+dist/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# OS noise
+Thumbs.db
+.DS_Store

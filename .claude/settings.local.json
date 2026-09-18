@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(grep -oE \"ytp-progress-list[^>]{0,100}\" c:/YTP/content/youtube.example)",
-      "Bash(node -e ' *)"
-    ]
-  }
-}
