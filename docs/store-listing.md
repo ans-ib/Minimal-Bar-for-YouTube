@@ -83,3 +83,35 @@ is needed because no user data is handled; you may still link one if you have it
 - Each later update needs a higher `version` in `package.json`, a changelog
   entry, and a `vX.Y.Z` tag (see CONTRIBUTING.md → Releasing).
 - `dist/` and `web-ext-artifacts/` are build output and stay out of git.
+
+---
+
+# Firefox Add-ons (addons.mozilla.org)
+
+- Account: https://addons.mozilla.org/developers/ (free, a Mozilla account).
+- Files: `npm run package:firefox` and `npm run source:mozilla`, or take both
+  from the GitHub release: the `firefox` zip and the `source` zip.
+- Submit a New Add-on → "On this site" → upload the firefox zip. The linter
+  runs on upload; it passes with zero warnings.
+- "Do you need to submit source code?" → **Yes**, upload the source zip. The
+  build is bundled (esbuild) and minified (Tailwind), so Mozilla requires it.
+  In the notes to reviewers paste:
+
+  > Node 20+. `npm ci` then `npm run build:firefox` produces `dist/`, which is
+  > exactly the uploaded package. See README "Build it yourself".
+
+- License: pick "GNU Affero General Public License v3.0" from the list.
+- Listing: reuse the Chrome description above. Categories: "Appearance" or
+  "Photos, Music & Videos". Screenshots: the same four images work.
+- Privacy policy: paste the text of PRIVACY.md or link to it. Data collection
+  section: "none", which matches `data_collection_permissions` in the manifest.
+- Review is mostly automated for add-ons without risky permissions; it is
+  often live within a day.
+
+# Microsoft Edge Add-ons
+
+- Account: https://partner.microsoft.com/dashboard/microsoftedge (free).
+- Upload the **chromium** zip unchanged. The extension was verified in Edge
+  (the store screenshots were captured in headless Edge).
+- Listing, privacy and screenshots: same as the Chrome Web Store above.
+- Review typically takes a few days.

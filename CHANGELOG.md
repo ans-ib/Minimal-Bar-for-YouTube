@@ -17,7 +17,7 @@ All notable changes to this project are documented here. The format follows
   it is restored on the next visit.
 - Settings popup (also the options page): wheel volume on/off, bar thickness,
   label text size. Stored with `storage.sync` and applied live.
-- Builds for Chrome, Brave and other Chromium browsers.
+- Builds for Chrome, Brave, Edge and other Chromium browsers, and for Firefox 142+.
 
 ### Fixed
 - The chapter label no longer shows YouTube's "In this video" placeholder on

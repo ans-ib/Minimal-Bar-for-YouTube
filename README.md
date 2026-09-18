@@ -14,7 +14,7 @@
 
   # Minimal Bar for YouTube
 
-  A Chrome extension, for Chrome, Brave and other Chromium browsers, that keeps a minimal progress bar on screen while YouTube's controls are hidden and lets you change the volume with the mouse wheel.
+  A browser extension for Chrome, Brave, Edge and other Chromium browsers, and for Firefox, that keeps a minimal progress bar on screen while YouTube's controls are hidden and lets you change the volume with the mouse wheel.
 
 </div>
 
@@ -22,11 +22,15 @@
 
   ## Download
 
-  **Chrome Web Store:** coming soon. Until then, grab the latest zip from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) or [build it yourself](#build-it-yourself).
+  **Chrome Web Store**, **Firefox Add-ons** and **Microsoft Edge Add-ons:** coming soon.
+
+  Until then, grab the zips from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) or [build it yourself](#build-it-yourself).
 
 </div>
 
-**Install a release zip in Chrome, Brave or any other Chromium browser:** unzip it, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
+**Chrome, Brave, Edge or any other Chromium browser:** unzip the `chromium` zip, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
+
+**Firefox (142 or newer):** open `about:debugging` → *This Firefox* → *Load Temporary Add-on* and pick the `firefox` zip. Temporary add-ons are removed when Firefox restarts; the store version will be permanent.
 
 ---
 
@@ -69,11 +73,16 @@ npm install
 ```
 
 ```bash
-# Build and package for Chrome, Brave and other Chromium browsers
-npm run package
+# Build and package for Chrome, Brave, Edge and other Chromium browsers
+npm run package:chromium
 ```
 
-The zip lands in `web-ext-artifacts/`. To load the extension unpacked instead, run `npm run build` and point the browser at the `dist/` folder.
+```bash
+# Build and package for Firefox
+npm run package:firefox
+```
+
+The zips land in `web-ext-artifacts/`. To load the extension unpacked instead, run `npm run build:chromium` (or `build:firefox`) and point the browser at the `dist/` folder.
 
 ### Development
 
@@ -99,7 +108,7 @@ After a rebuild, click the reload icon on the extension's card in `chrome://exte
 | `src/common/settings.js` | Settings defaults, validation and storage, shared with the popup. |
 | `src/popup/` | Toolbar popup (also the options page). Styled with [Tailwind CSS](https://tailwindcss.com/). |
 | `src/styles/content.css` | Styles injected into YouTube, all prefixed `yte-`. |
-| `manifests/` | The extension manifest. `version` and `description` are copied in from `package.json` at build time. |
+| `manifests/` | One manifest per browser (Chromium, Firefox). `version` and `description` are copied in from `package.json` at build time. |
 | `scripts/build.js` | The build: esbuild bundles, Tailwind compiles the popup CSS, static files are copied, `web-ext` zips. |
 | `tests/` | Unit tests on a small fake DOM, run with Node's built-in test runner. |
 | `docs/` | Store listing copy and a captured YouTube player DOM used as a reference. |

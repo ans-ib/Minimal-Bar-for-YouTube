@@ -29,6 +29,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run package
+      - run: npm run source:mozilla
 
       - uses: softprops/action-gh-release@v2
         with:

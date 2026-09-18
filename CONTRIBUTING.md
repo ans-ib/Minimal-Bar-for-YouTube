@@ -21,7 +21,8 @@ Thanks for your interest. Bug reports, fixes and ideas are all welcome.
    ```
 
 4. Load `dist/` unpacked: `chrome://extensions` (or `brave://extensions`) →
-   Developer mode → Load unpacked.
+   Developer mode → Load unpacked. For Firefox: `npm run build:firefox`, then
+   `about:debugging` → This Firefox → Load Temporary Add-on → `dist/manifest.json`.
 
 ## Project structure
 
@@ -35,7 +36,7 @@ src/
   common/settings.js          defaults, validation, storage.sync access
   popup/                      toolbar popup / options page (Tailwind CSS)
   styles/content.css          styles injected into YouTube (all prefixed yte-)
-manifests/                    the extension manifest
+manifests/                    one manifest per browser target
 scripts/build.js              esbuild + Tailwind + web-ext, cross-platform
 tests/                        unit tests (node:test) on a small fake DOM
 docs/                         store listing copy, captured YouTube player DOM
@@ -60,11 +61,12 @@ docs/                         store listing copy, captured YouTube player DOM
 
 ## Browser compatibility
 
-The extension targets Chromium browsers (Chrome, Brave, Edge, ...) version 111
-or newer: Manifest V3 with a `world: "MAIN"` content script. `version` and
-`description` are copied from `package.json` at build time; edit them there.
-A Firefox manifest is kept in `manifests/` for future work, but it is not
-built by default, tested, or published.
+Chromium browsers (Chrome, Brave, Edge, ...) 111+ and Firefox 142+ both use
+Manifest V3 with a `world: "MAIN"` content script. They differ only in
+`browser_specific_settings`, so each has its own file in `manifests/`.
+`version` and `description` are copied from `package.json` at build time; edit
+them there. `npm run lint:firefox` runs Mozilla's add-on linter on the Firefox
+build; keep it at zero warnings.
 
 ## Testing
 
@@ -95,8 +97,10 @@ have caught. Then check by hand on a YouTube video with chapters:
 1. Move the Unreleased entries in `CHANGELOG.md` under a new version heading.
 2. Bump `version` in `package.json` (`npm version patch|minor|major --no-git-tag-version`).
 3. Commit, then tag and push: `git tag v1.2.3 && git push origin main v1.2.3`.
-4. The release workflow runs the tests, builds the extension, and attaches the
-   zip to a GitHub release. Upload the Chromium zip to the Chrome Web Store
+4. The release workflow runs the tests, builds both targets and the source
+   archive, and attaches them to a GitHub release. Upload the Chromium zip to
+   the Chrome Web Store and Edge Add-ons, and the Firefox zip plus the source
+   archive to Firefox Add-ons (Mozilla requires source for bundled code). Upload the Chromium zip to the Chrome Web Store
    dashboard from there.
 
 ## Reporting issues

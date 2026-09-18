@@ -70,7 +70,7 @@ const esbuildOptions = {
   bundle: true,
   format: 'iife',
   platform: 'browser',
-  target: target === 'firefox' ? ['firefox128'] : ['chrome111'],
+  target: target === 'firefox' ? ['firefox142'] : ['chrome111'],
   legalComments: 'none',
   logLevel: 'warning'
 };
@@ -131,6 +131,23 @@ async function packageZip() {
   log(`packaged -> web-ext-artifacts/${filename}`);
 }
 
+/**
+ * Source archive for addons.mozilla.org reviewers. Mozilla requires the
+ * source of any bundled or minified add-on, plus build instructions (README).
+ */
+function sourceZip() {
+  fs.mkdirSync(artifacts, { recursive: true });
+  const file = path.join(artifacts, `${pkg.name}-source-${pkg.version}.zip`);
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', ['archive', '--format=zip', `--prefix=${pkg.name}-${pkg.version}/`, '-o', file, 'HEAD'], { cwd: root, stdio: 'inherit' });
+    child.on('exit', (code) => {
+      if (code !== 0) return reject(new Error(`git archive exited with code ${code}`));
+      console.log(`[source] -> web-ext-artifacts/${path.basename(file)}`);
+      resolve();
+    });
+  });
+}
+
 async function watchMode() {
   await buildOnce();
   const ctx = await esbuildContext(esbuildOptions);
@@ -154,6 +171,8 @@ if (args.has('clean')) {
   clean();
   fs.rmSync(artifacts, { recursive: true, force: true });
   log('removed dist/ and web-ext-artifacts/');
+} else if (args.has('source')) {
+  await sourceZip();
 } else if (args.has('watch')) {
   await watchMode();
 } else {
