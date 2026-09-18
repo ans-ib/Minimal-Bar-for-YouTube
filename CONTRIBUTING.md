@@ -106,5 +106,7 @@ extension version, a video URL where it happens, and what you expected.
 
 ## License
 
-By contributing you agree that your contributions are licensed under the
-project's [MIT License](LICENSE).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE)
+or later. By contributing you agree that your contributions are licensed under
+the same terms. Start new source files with the license header used in the
+existing ones (see the top of `src/content/index.js`).

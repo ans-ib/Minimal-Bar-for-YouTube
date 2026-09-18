@@ -141,7 +141,7 @@ This extension is free and open source. If you find it useful you can help by:
 
   # License
 
-  This project is licensed under the [MIT License](LICENSE).
+  This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
 
   Not affiliated with YouTube or Google. YouTube is a trademark of Google LLC.
 

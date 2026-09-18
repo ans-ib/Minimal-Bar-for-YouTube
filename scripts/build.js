@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+/*
+ * Minimal Bar for YouTube
+ * Copyright (C) 2026 Anas Ibn Bari
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version. See the LICENSE file for details.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * Build script (cross-platform, no shell commands).
  *
@@ -44,6 +55,7 @@ const bundles = [
   { in: 'src/popup/popup.js', out: 'popup/popup' }
 ];
 const staticFiles = [
+  ['LICENSE', 'LICENSE'],
   ['src/popup/popup.html', 'popup/popup.html'],
   ['src/styles/content.css', 'styles/content.css'],
   ['assets/icons/icon16.png', 'assets/icons/icon16.png'],

@@ -4,7 +4,7 @@
   "description": "Minimal progress bar with chapter and time labels while YouTube's controls are hidden, plus mouse-wheel volume over the video.",
   "private": true,
   "type": "module",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "author": "Anas Ibn Bari",
   "homepage": "https://github.com/ans-ib/Youtube_Enhancer#readme",
   "repository": {
