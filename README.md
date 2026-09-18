@@ -126,7 +126,7 @@ This extension is free and open source. If you find it useful, you can support i
 
 <div align="center">
 
-  [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ans-ib)
+  [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ansib)
 
 </div>
 
