@@ -129,7 +129,15 @@ Contributions are welcome, whether it is a bug fix, a feature, or a report of so
 
 </div>
 
-This extension is free and open source. If you find it useful you can help by:
+This extension is free and open source. If you find it useful, you can support its development with a pay-what-you-want contribution:
+
+<div align="center">
+
+  [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ans-ib)
+
+</div>
+
+You can also help by:
 
 - Starring this repository
 - Rating the extension once it is on the Chrome Web Store
