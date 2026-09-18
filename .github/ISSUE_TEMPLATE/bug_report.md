@@ -16,7 +16,7 @@ A clear description of the problem.
 2. ...
 
 **Environment**
-- Browser and version (e.g. Chrome 140, Firefox 131):
+- Browser and version (e.g. Chrome 140, Brave 1.80):
 - Extension version (from `chrome://extensions`):
 - Other YouTube extensions installed:
 

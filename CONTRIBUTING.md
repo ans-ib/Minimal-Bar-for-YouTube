@@ -8,8 +8,8 @@ Thanks for your interest. Bug reports, fixes and ideas are all welcome.
 2. Fork and clone the repository, then install dependencies:
 
    ```bash
-   git clone https://github.com/<you>/Youtube_Enhancer.git
-   cd Youtube_Enhancer
+   git clone https://github.com/<you>/Minimal-Bar-for-YouTube.git
+   cd Minimal-Bar-for-YouTube
    npm install
    ```
 
@@ -20,9 +20,8 @@ Thanks for your interest. Bug reports, fixes and ideas are all welcome.
    npm run watch            # rebuild dist/ on every change
    ```
 
-4. Load `dist/` unpacked: `chrome://extensions` → Developer mode → Load unpacked.
-   For Firefox: `npm run build:firefox`, then `about:debugging` → This Firefox →
-   Load Temporary Add-on → pick `dist/manifest.json`.
+4. Load `dist/` unpacked: `chrome://extensions` (or `brave://extensions`) →
+   Developer mode → Load unpacked.
 
 ## Project structure
 
@@ -36,7 +35,7 @@ src/
   common/settings.js          defaults, validation, storage.sync access
   popup/                      toolbar popup / options page (Tailwind CSS)
   styles/content.css          styles injected into YouTube (all prefixed yte-)
-manifests/                    one manifest per browser target
+manifests/                    the extension manifest
 scripts/build.js              esbuild + Tailwind + web-ext, cross-platform
 tests/                        unit tests (node:test) on a small fake DOM
 docs/                         store listing copy, captured YouTube player DOM
@@ -61,10 +60,11 @@ docs/                         store listing copy, captured YouTube player DOM
 
 ## Browser compatibility
 
-Chromium (111+) and Firefox (128+) both use Manifest V3 with a `world: "MAIN"`
-content script. They differ only in `browser_specific_settings`, so each has
-its own file in `manifests/`. `version` and `description` are copied from
-`package.json` at build time; edit them there.
+The extension targets Chromium browsers (Chrome, Brave, Edge, ...) version 111
+or newer: Manifest V3 with a `world: "MAIN"` content script. `version` and
+`description` are copied from `package.json` at build time; edit them there.
+A Firefox manifest is kept in `manifests/` for future work, but it is not
+built by default, tested, or published.
 
 ## Testing
 
@@ -95,8 +95,8 @@ have caught. Then check by hand on a YouTube video with chapters:
 1. Move the Unreleased entries in `CHANGELOG.md` under a new version heading.
 2. Bump `version` in `package.json` (`npm version patch|minor|major --no-git-tag-version`).
 3. Commit, then tag and push: `git tag v1.2.3 && git push origin main v1.2.3`.
-4. The release workflow builds both targets, runs the tests, and attaches the
-   zips to a GitHub release. Upload the Chromium zip to the Chrome Web Store
+4. The release workflow runs the tests, builds the extension, and attaches the
+   zip to a GitHub release. Upload the Chromium zip to the Chrome Web Store
    dashboard from there.
 
 ## Reporting issues

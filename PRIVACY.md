@@ -33,6 +33,6 @@
 
 If this policy ever changes, the change is recorded in the project's
 [changelog](CHANGELOG.md). Questions can be raised on the
-[issue tracker](https://github.com/ans-ib/Youtube_Enhancer/issues).
+[issue tracker](https://github.com/ans-ib/Minimal-Bar-for-YouTube/issues).
 
 _Last updated: 2026-09-18_

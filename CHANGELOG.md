@@ -17,11 +17,11 @@ All notable changes to this project are documented here. The format follows
   it is restored on the next visit.
 - Settings popup (also the options page): wheel volume on/off, bar thickness,
   label text size. Stored with `storage.sync` and applied live.
-- Chromium and Firefox (128+) build targets.
+- Builds for Chrome, Brave and other Chromium browsers.
 
 ### Fixed
 - The chapter label no longer shows YouTube's "In this video" placeholder on
   videos without creator chapters.
 
-[Unreleased]: https://github.com/ans-ib/Youtube_Enhancer/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/ans-ib/Youtube_Enhancer/releases/tag/v1.0.0
+[Unreleased]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/tag/v1.0.0
