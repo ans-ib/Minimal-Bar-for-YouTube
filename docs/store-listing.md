@@ -8,10 +8,11 @@ Everything below is ready to paste into the Developer Dashboard. Anything in
 - Developer account: https://chrome.google.com/webstore/devconsole. One-time
   registration fee, a verified email, and 2-step verification on the Google
   account are required before you can publish.
-- Build the zip: `powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1`
-  → upload `dist/minimal-bar-for-youtube-1.0.0.zip`.
-- The name and short description come from `manifest.json`. If you rename the
-  extension, change it there and rebuild. Avoid names that start with
+- Build the zip: `npm run package:chromium`
+  → upload `web-ext-artifacts/minimal-bar-for-youtube-chromium-<version>.zip`
+  (or download it from the GitHub release the tag workflow creates).
+- The name comes from `manifests/manifest.chromium.json`; the short description
+  and version come from `package.json`. Change them there and rebuild. Avoid names that start with
   "YouTube" (the store treats "YouTube ___" as implying affiliation; the
   "___ for YouTube" form is the accepted one). "Enhancer for YouTube" is an
   existing, well-known extension, so avoid that too.
@@ -42,7 +43,7 @@ Everything below is ready to paste into the Developer Dashboard. Anything in
 
 | Asset | Size | Required | Notes |
 | --- | --- | --- | --- |
-| Store icon | 128×128 | Yes | Use `icons/icon128.png` |
+| Store icon | 128×128 | Yes | Use `assets/icons/icon128.png` |
 | Screenshots | 1280×800 (or 640×400) | Yes, 1–5 | **[Take these]**: one showing the bar with chapter/time labels while controls are hidden, one showing the volume indicator mid-scroll, one of the settings popup |
 | Small promo tile | 440×280 | No | Shown in search results and category pages; worth having |
 | Marquee | 1400×560 | No | Only used if the store features the extension |
@@ -79,6 +80,6 @@ is needed because no user data is handled; you may still link one if you have it
 ## After submitting
 
 - Review usually takes one to a few business days for a first submission.
-- Each later update needs a higher `version` in `manifest.json` and a fresh
-  `build.ps1` run.
-- Keep `dist/` out of git (already in `.gitignore`).
+- Each later update needs a higher `version` in `package.json`, a changelog
+  entry, and a `vX.Y.Z` tag (see CONTRIBUTING.md → Releasing).
+- `dist/` and `web-ext-artifacts/` are build output and stay out of git.

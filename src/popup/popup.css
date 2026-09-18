@@ -1,0 +1,68 @@
+/* Popup styles: Tailwind utilities plus a few components (built by the
+   Tailwind CLI into dist/popup/popup.css). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    font-family: Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* ---- Toggle switch (a styled checkbox) ---- */
+  .switch {
+    @apply relative m-0 h-[22px] w-[38px] shrink-0 cursor-pointer appearance-none rounded-full bg-neutral-300 dark:bg-neutral-600;
+  }
+
+  .switch::before {
+    content: "";
+    @apply absolute left-[3px] top-[3px] h-4 w-4 rounded-full bg-white shadow;
+  }
+
+  .switch:checked {
+    @apply bg-red-600;
+  }
+
+  .switch:checked::before {
+    @apply translate-x-4;
+  }
+
+  /* Transitions come on after the first render (body.ready) so the switch
+     doesn't visibly slide into its saved state every time the popup opens. */
+  body.ready .switch {
+    @apply transition-colors duration-150;
+  }
+
+  body.ready .switch::before {
+    @apply transition-transform duration-150;
+  }
+
+  /* ---- Range slider ---- */
+  .range {
+    @apply mt-1 block w-full cursor-pointer accent-red-600;
+  }
+
+  /* ---- Text button ---- */
+  .link {
+    @apply cursor-pointer border-0 bg-transparent p-0 text-blue-600 hover:underline dark:text-blue-400;
+  }
+
+  .switch:focus-visible,
+  .range:focus-visible,
+  .link:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-blue-500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ready .switch,
+  body.ready .switch::before {
+    transition: none;
+  }
+}

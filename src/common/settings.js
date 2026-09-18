@@ -1,11 +1,19 @@
 /**
- * Settings shared by the content scripts and the popup/options page.
+ * Settings shared by the content scripts and the popup / options page.
  *
- * Stored in chrome.storage.sync so they persist across sessions and follow
- * the user's Chrome profile. Every read passes through normalize(), so the
- * rest of the code can trust the shape and ranges.
+ * Stored in storage.sync so they persist across sessions and follow the
+ * user's browser profile. Every read passes through normalize(), so the rest
+ * of the code can trust the shape and ranges.
  */
-const YteSettings = {
+
+/** Firefox exposes promise-based APIs on `browser`; Chromium on `chrome`. */
+function storageApi() {
+  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) return browser.storage;
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) return chrome.storage;
+  return null;
+}
+
+export const YteSettings = {
   DEFAULTS: Object.freeze({
     scrollVolume: true,   // mouse wheel over the video changes volume
     barHeight: 3,         // px, thickness of the minimal progress bar
@@ -33,13 +41,14 @@ const YteSettings = {
   },
 
   hasStorage() {
-    return typeof chrome !== 'undefined' && !!chrome.storage && !!chrome.storage.sync;
+    return storageApi() !== null;
   },
 
   async load() {
-    if (!this.hasStorage()) return this.normalize(null);
+    const storage = storageApi();
+    if (!storage) return this.normalize(null);
     try {
-      return this.normalize(await chrome.storage.sync.get(this.DEFAULTS));
+      return this.normalize(await storage.sync.get(this.DEFAULTS));
     } catch (e) {
       return this.normalize(null);
     }
@@ -47,15 +56,17 @@ const YteSettings = {
 
   /** Merge a partial update into the stored settings. */
   async save(partial) {
-    if (!this.hasStorage()) throw new Error('chrome.storage is unavailable');
+    const storage = storageApi();
+    if (!storage) throw new Error('storage API is unavailable');
     const current = await this.load();
-    await chrome.storage.sync.set(this.normalize(Object.assign({}, current, partial)));
+    await storage.sync.set(this.normalize(Object.assign({}, current, partial)));
   },
 
   /** Call back with the full, normalized settings whenever they change. */
   onChange(callback) {
-    if (!this.hasStorage() || !chrome.storage.onChanged) return;
-    chrome.storage.onChanged.addListener((changes, area) => {
+    const storage = storageApi();
+    if (!storage || !storage.onChanged) return;
+    storage.onChanged.addListener((changes, area) => {
       if (area !== 'sync') return;
       this.load().then(callback);
     });

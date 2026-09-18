@@ -6,7 +6,7 @@
  * MAIN-world bridge in inject.js) so the native slider and mute state stay
  * in sync.
  */
-class ScrollVolumeControl {
+export class ScrollVolumeControl {
   /** Percent per step. */
   static STEP = 5;
   /**
@@ -60,10 +60,16 @@ class ScrollVolumeControl {
     return { volume: Math.round(this.video.volume * 100), muted: this.video.muted };
   }
 
-  /** @param {number} volume 0-100 */
+  /**
+   * @param {number} volume 0-100
+   * The value travels through a DOM attribute rather than CustomEvent.detail:
+   * DOM state is shared between the isolated and page worlds in every
+   * browser, whereas detail objects are not readable across worlds in Firefox.
+   */
   setVolume(volume) {
     volume = Math.max(0, Math.min(100, Math.round(volume)));
-    document.dispatchEvent(new CustomEvent('yte-volume-set', { detail: { volume } }));
+    document.documentElement.setAttribute('data-yte-set-volume', String(volume));
+    document.dispatchEvent(new CustomEvent('yte-volume-set'));
   }
 
   handleWheel(event) {

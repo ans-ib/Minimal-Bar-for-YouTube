@@ -11,7 +11,7 @@
  * animation frame, and only when they change. DOM queries for chapter layout
  * and label text run on the slower DOM_POLL_MS cadence.
  */
-class NativeControlsEnhancer {
+export class NativeControlsEnhancer {
   static DOM_POLL_MS = 250;
 
   constructor(video, player) {

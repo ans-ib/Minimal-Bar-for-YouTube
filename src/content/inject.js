@@ -4,7 +4,8 @@
  * Content scripts run in an isolated world and cannot call YouTube's player
  * API directly. They dispatch DOM events, and this script (which runs in the
  * page's own world) answers them using the real #movie_player API so the
- * native volume slider and mute state stay in sync.
+ * native volume slider and mute state stay in sync. Values are exchanged via
+ * attributes on <html>, which both worlds can read in every browser.
  *
  * This file touches nothing but the player's volume. No network, no storage.
  */
@@ -40,9 +41,10 @@
     }
   }
 
-  document.addEventListener('yte-volume-set', function (e) {
+  document.addEventListener('yte-volume-set', function () {
     var player = getPlayer();
-    var volume = e.detail ? Number(e.detail.volume) : NaN;
+    var raw = document.documentElement.getAttribute('data-yte-set-volume');
+    var volume = raw === null ? NaN : Number(raw);
     if (!player || !isFinite(volume)) return;
     try {
       volume = Math.max(0, Math.min(100, volume));

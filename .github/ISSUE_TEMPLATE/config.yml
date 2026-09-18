@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/ans-ib/Youtube_Enhancer/discussions
+    about: Ask a question or float an idea before opening an issue.

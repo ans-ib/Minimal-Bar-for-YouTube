@@ -5,7 +5,7 @@
  * The video is looked up *inside* #movie_player so that YouTube's inline
  * preview players (which use the same video class) are never picked up.
  */
-class YouTubeDetector {
+export class YouTubeDetector {
   static NAV_SETTLE_MS = 100;
 
   constructor() {

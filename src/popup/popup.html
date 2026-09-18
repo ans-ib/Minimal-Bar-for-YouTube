@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimal Bar for YouTube</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body class="m-0 w-[300px] bg-white text-[13px] leading-snug text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100">
+  <main class="pb-2">
+    <header class="flex items-center gap-2.5 border-b border-neutral-200 px-4 pb-2.5 pt-3 dark:border-neutral-700">
+      <img class="rounded-md" src="../assets/icons/icon48.png" alt="" width="24" height="24">
+      <h1 class="m-0 text-sm font-semibold">Minimal Bar for YouTube</h1>
+    </header>
+
+    <section class="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">
+      <div class="min-w-0">
+        <label for="scrollVolume" class="cursor-pointer font-medium">Scroll to change volume</label>
+        <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">Mouse wheel over the video adjusts volume in 5% steps.</p>
+      </div>
+      <input type="checkbox" id="scrollVolume" class="switch" role="switch">
+    </section>
+
+    <section class="border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">
+      <div class="mb-1.5 flex items-baseline justify-between">
+        <label for="barHeight" class="cursor-pointer font-medium">Bar thickness</label>
+        <output id="barHeightValue" for="barHeight" class="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">3 px</output>
+      </div>
+      <input type="range" id="barHeight" step="1" class="range">
+    </section>
+
+    <section class="px-4 py-3">
+      <div class="mb-1.5 flex items-baseline justify-between">
+        <label for="labelFontSize" class="cursor-pointer font-medium">Label text size</label>
+        <output id="labelFontSizeValue" for="labelFontSize" class="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">12 px</output>
+      </div>
+      <input type="range" id="labelFontSize" step="1" class="range">
+      <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">Chapter name and time shown while the controls are hidden.</p>
+    </section>
+
+    <footer class="flex items-center justify-between px-4 pb-1 pt-2.5">
+      <button type="button" id="reset" class="link">Reset to defaults</button>
+      <span id="status" class="min-h-[1em] text-xs text-neutral-500 dark:text-neutral-400" aria-live="polite"></span>
+    </footer>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

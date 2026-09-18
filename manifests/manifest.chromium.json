@@ -6,9 +6,9 @@
   "minimum_chrome_version": "111",
   "permissions": ["storage"],
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
   },
   "action": {
     "default_popup": "popup/popup.html",
@@ -27,13 +27,7 @@
     },
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": [
-        "common/settings.js",
-        "content/youtubeDetector.js",
-        "content/progressBar.js",
-        "content/scrollVolume.js",
-        "content/content.js"
-      ],
+      "js": ["content/content.js"],
       "css": ["styles/content.css"],
       "run_at": "document_end"
     }

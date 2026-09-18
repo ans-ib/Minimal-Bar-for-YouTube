@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Minimal Bar for YouTube",
+  "version": "1.0.0",
+  "description": "Minimal progress bar with chapter and time labels while YouTube's controls are hidden, plus mouse-wheel volume over the video.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "minimal-bar-for-youtube@ans-ib.github.io",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "permissions": ["storage"],
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Minimal Bar for YouTube settings"
+  },
+  "options_ui": {
+    "page": "popup/popup.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content/inject.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content/content.js"],
+      "css": ["styles/content.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

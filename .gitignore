@@ -1,5 +1,9 @@
-# Packaged zips for the Chrome Web Store
+# Dependencies
+node_modules/
+
+# Build output and packaged zips
 dist/
+web-ext-artifacts/
 
 # Claude Code local settings
 .claude/settings.local.json
