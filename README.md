@@ -22,15 +22,16 @@
 
   ## Download
 
+  [![Get it on the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Get%20the%20extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/minimal-bar-for-youtube/oplglmmjagffpojanjhnjboogdokljld)
   [![Get it for Microsoft Edge](https://img.shields.io/badge/Microsoft%20Edge-Get%20the%20add--on-0078D7?style=for-the-badge)](https://microsoftedge.microsoft.com/addons/detail/minimal-bar-for-youtube/llcgbejikjgnfjobllkdmiekmkccdefd)
 
-  **Chrome Web Store** and **Firefox Add-ons:** in review, coming soon.
+  Brave, Opera, Vivaldi and other Chromium browsers install from the Chrome Web Store.
 
-  Until then, grab the zips from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) or [build it yourself](#build-it-yourself).
+  **Firefox Add-ons:** in review, coming soon. Until then, grab the Firefox zip from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) or [build it yourself](#build-it-yourself).
 
 </div>
 
-**Chrome, Brave or any other Chromium browser** (until the Chrome Web Store listing is live): unzip the `chromium` zip, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
+**Manual install in a Chromium browser:** unzip the `chromium` zip from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest), open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
 
 **Firefox (142 or newer):** open `about:debugging` → *This Firefox* → *Load Temporary Add-on* and pick the `firefox` zip. Temporary add-ons are removed when Firefox restarts; the store version will be permanent.
 
