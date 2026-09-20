@@ -135,10 +135,25 @@ if (args.has('plan')) {
   process.exit(0);
 }
 
-const cliPkgPath = require.resolve('publish-browser-extension/package.json');
-const cliPkg = JSON.parse(fs.readFileSync(cliPkgPath, 'utf8'));
-const binRel = typeof cliPkg.bin === 'string' ? cliPkg.bin : cliPkg.bin['publish-extension'];
-const cli = path.join(path.dirname(cliPkgPath), binRel);
+// The package's "exports" map does not expose package.json, so resolve its
+// main entry (which is exported) and walk up to the package directory.
+function locateCli() {
+  let dir = path.dirname(require.resolve('publish-browser-extension'));
+  for (;;) {
+    const pkgJson = path.join(dir, 'package.json');
+    if (fs.existsSync(pkgJson)) {
+      const meta = JSON.parse(fs.readFileSync(pkgJson, 'utf8'));
+      if (meta.name === 'publish-browser-extension') {
+        const bin = typeof meta.bin === 'string' ? meta.bin : meta.bin['publish-extension'];
+        return path.join(dir, bin);
+      }
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) throw new Error('publish-browser-extension is not installed; run npm install');
+    dir = parent;
+  }
+}
+const cli = locateCli();
 
 const cliArgs = selected.flatMap((s) => STORES[s].flags());
 if (args.has('dry-run')) cliArgs.push('--dry-run');
