@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-20
+
+### Changed
+- The license text now ships inside the extension package.
+- The Firefox build requires Firefox 142 or newer.
+- Popup styles are compiled with Tailwind CSS 4. No visible change.
+
 ## [1.0.0] - 2026-09-18
 
 ### Added
@@ -23,5 +30,6 @@ All notable changes to this project are documented here. The format follows
 - The chapter label no longer shows YouTube's "In this video" placeholder on
   videos without creator chapters.
 
-[Unreleased]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/tag/v1.0.0
