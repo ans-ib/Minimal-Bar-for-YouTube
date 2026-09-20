@@ -98,9 +98,11 @@ function copyStatic() {
   }
 }
 
-/** Runs the Tailwind CLI. Resolves on exit, or immediately in --watch mode. */
+/** Runs the Tailwind CSS 4 CLI. Resolves on exit, or immediately in --watch mode. */
 function tailwind(extraArgs = []) {
-  const cli = require.resolve('tailwindcss/lib/cli.js');
+  const cliPkgPath = require.resolve('@tailwindcss/cli/package.json');
+  const cliPkg = JSON.parse(fs.readFileSync(cliPkgPath, 'utf8'));
+  const cli = path.join(path.dirname(cliPkgPath), typeof cliPkg.bin === 'string' ? cliPkg.bin : cliPkg.bin.tailwindcss);
   const child = spawn(
     process.execPath,
     [cli, '-i', path.join(root, 'src/popup/popup.css'), '-o', path.join(dist, 'popup/popup.css'), '--minify', ...extraArgs],

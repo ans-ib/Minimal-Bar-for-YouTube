@@ -9,11 +9,10 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/* Popup styles: Tailwind utilities plus a few components (built by the
-   Tailwind CLI into dist/popup/popup.css). */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Popup styles: Tailwind CSS 4 utilities plus a few components, compiled by
+   @tailwindcss/cli into dist/popup/popup.css. source("./") limits class
+   detection to this folder (popup.html, popup.js). */
+@import "tailwindcss" source("./");
 
 @layer base {
   :root {
@@ -33,7 +32,7 @@
 
   .switch::before {
     content: "";
-    @apply absolute left-[3px] top-[3px] h-4 w-4 rounded-full bg-white shadow;
+    @apply absolute left-[3px] top-[3px] h-4 w-4 rounded-full bg-white shadow-sm;
   }
 
   .switch:checked {
@@ -67,7 +66,7 @@
   .switch:focus-visible,
   .range:focus-visible,
   .link:focus-visible {
-    @apply outline outline-2 outline-offset-2 outline-blue-500;
+    @apply outline-2 outline-offset-2 outline-blue-500;
   }
 }
 
