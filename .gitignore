@@ -5,6 +5,9 @@ node_modules/
 dist/
 web-ext-artifacts/
 
+# Store API credentials written by `npm run submit:init`. Never commit.
+.env.submit
+
 # Claude Code local settings
 .claude/settings.local.json
 

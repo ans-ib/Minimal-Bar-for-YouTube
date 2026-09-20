@@ -98,10 +98,14 @@ have caught. Then check by hand on a YouTube video with chapters:
 2. Bump `version` in `package.json` (`npm version patch|minor|major --no-git-tag-version`).
 3. Commit, then tag and push: `git tag v1.2.3 && git push origin main v1.2.3`.
 4. The release workflow runs the tests, builds both targets and the source
-   archive, and attaches them to a GitHub release. Upload the Chromium zip to
-   the Chrome Web Store and Edge Add-ons, and the Firefox zip plus the source
-   archive to Firefox Add-ons (Mozilla requires source for bundled code). Upload the Chromium zip to the Chrome Web Store
-   dashboard from there.
+   archive, and attaches them to a GitHub release.
+5. Submit to the stores. Either upload by hand (Chromium zip to the Chrome Web
+   Store and Edge Add-ons; Firefox zip plus the source archive to Firefox
+   Add-ons, since Mozilla requires source for bundled code), or let the
+   release workflow submit to Chrome and Edge for you: with the repository
+   variable `SUBMIT_TO_STORES` set to `true`, the workflow pauses at the
+   `stores` environment for your approval, then uploads and submits. See
+   "Automated submission" in `docs/store-listing.md`.
 
 ## Reporting issues
 

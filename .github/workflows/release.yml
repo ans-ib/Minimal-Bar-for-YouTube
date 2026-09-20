@@ -1,19 +1,38 @@
 name: Release
 
+# Pushing a tag like v1.2.3 builds the extension, attaches the zips to a
+# GitHub release, and (opt-in) submits them to the extension stores.
+#
+# Security model
+# - Actions are pinned to full commit SHAs (Dependabot keeps them current).
+# - The default token has no permissions; each job requests only what it needs.
+# - Store credentials live in the "stores" GitHub environment, never in the
+#   repository, and are exposed only to the `submit` job. That environment can
+#   require your manual approval before the job runs.
+# - The submit job re-verifies the checksums of what the build job produced.
+
 on:
   push:
     tags: ['v*']
 
-permissions:
-  contents: write
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  release:
+  build:
+    name: Build and publish the GitHub release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and attach files
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -31,7 +50,66 @@ jobs:
       - run: npm run package
       - run: npm run source:mozilla
 
-      - uses: softprops/action-gh-release@v2
+      - name: Record checksums
+        run: cd web-ext-artifacts && sha256sum *.zip | tee SHA256SUMS
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          files: web-ext-artifacts/*.zip
+          name: release-artifacts
+          path: |
+            web-ext-artifacts/*.zip
+            web-ext-artifacts/SHA256SUMS
+          if-no-files-found: error
+
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: |
+            web-ext-artifacts/*.zip
+            web-ext-artifacts/SHA256SUMS
           generate_release_notes: true
+
+  submit:
+    name: Submit to the extension stores
+    needs: build
+    # Opt in by creating the repository variable SUBMIT_TO_STORES = "true".
+    if: ${{ vars.SUBMIT_TO_STORES == 'true' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: stores
+    permissions:
+      contents: read
+    env:
+      # Chrome Web Store (API v2, service account)
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+      CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+      CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+      # Microsoft Edge Add-ons (Publish API v1.1)
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-artifacts
+          path: web-ext-artifacts
+
+      - name: Verify the artifacts match what the build job produced
+        run: cd web-ext-artifacts && sha256sum -c SHA256SUMS
+
+      - name: Check the store credentials (no upload)
+        run: npm run submit:dry -- --stores=chrome,edge
+
+      - name: Upload and submit for review
+        run: npm run submit -- --stores=chrome,edge

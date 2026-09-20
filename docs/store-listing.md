@@ -115,3 +115,123 @@ is needed because no user data is handled; you may still link one if you have it
   (the store screenshots were captured in headless Edge).
 - Listing, privacy and screenshots: same as the Chrome Web Store above.
 - Review typically takes a few days.
+
+---
+
+# Automated submission (Chrome and Edge, one command)
+
+Pushing a version tag builds the extension, publishes the GitHub release, and
+then uploads the same zip to the Chrome Web Store and Microsoft Edge Add-ons
+and submits it for review, using
+[publish-browser-extension](https://github.com/aklinker1/publish-browser-extension).
+Each store's API can only update an item that already exists, which both do.
+
+## How the credentials are protected
+
+- They are stored only as **GitHub environment secrets** in an environment
+  named `stores`. Secrets are encrypted, write-only (nobody can read them back,
+  including you), masked in logs, and not available to pull requests or forks.
+- The environment can require **your manual approval** before the submit job
+  runs, so a tag push never ships to the stores without a click from you.
+- The submit job runs with a read-only repository token, on a runner that is
+  destroyed afterwards, and verifies the checksums of the files it uploads.
+- No credential ever needs to exist on your computer. Skip the local
+  `.env.submit` file entirely unless you want to submit from your own machine.
+  If you do create it, it is git-ignored, and CI scans every push for secrets.
+
+## One-time setup
+
+### 1. Chrome Web Store: a service account
+
+This is Google's recommended server-to-server method (API v2). It does not
+need OAuth screens or refresh tokens.
+
+1. Open https://console.cloud.google.com and create a project (any name, e.g.
+   `minimal-bar-publishing`).
+2. In the search bar type **Chrome Web Store API**, open it, click **Enable**.
+3. Go to **IAM & Admin → Service Accounts → Create service account**. Name it
+   `store-publisher`. Give it **no roles**. Finish.
+4. Open the new account → **Keys** tab → **Add key → Create new key → JSON**.
+   A `.json` file downloads. It holds the private key. Treat it like a
+   password and delete it once the secrets below are saved.
+5. In the Chrome Web Store Developer Dashboard
+   (https://chrome.google.com/webstore/devconsole) open the **Account** page
+   and add the service account's email (it ends in
+   `.iam.gserviceaccount.com`) in the service-account field. Google allows one
+   per publisher. The same page shows your **Publisher ID**.
+6. Your **extension ID** is the last part of the store URL:
+   `oplglmmjagffpojanjhnjboogdokljld`.
+
+### 2. Microsoft Edge Add-ons: Publish API credentials
+
+1. Open Partner Center → **Microsoft Edge** → **Publish API**.
+2. If you see "enable the new experience", click **Enable** (this is the
+   API-key flow, v1.1).
+3. Click **Create API credentials**. It shows a **Client ID** and a new
+   **API key** with an expiry date. Copy both now; the key is not shown again.
+4. The **Product ID** is on the extension's overview page under *Extension
+   identity*, and also in the dashboard URL between `microsoftedge/` and
+   `/packages`. It is a GUID, not the id in the public store URL.
+
+Edge API keys expire (the page shows when). Before that date, create a new key
+on the same page and update the `EDGE_API_KEY` secret.
+
+### 3. GitHub: the protected environment
+
+1. Repo → **Settings → Environments → New environment**, name it `stores`.
+2. Tick **Required reviewers** and add yourself. Optionally restrict
+   **Deployment branches and tags** to tags matching `v*`.
+3. Under that environment's **Environment secrets**, add:
+
+   | Secret | Value |
+   | --- | --- |
+   | `CHROME_EXTENSION_ID` | `oplglmmjagffpojanjhnjboogdokljld` |
+   | `CHROME_PUBLISHER_ID` | from the dashboard Account page |
+   | `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | `client_email` from the JSON key |
+   | `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY` | `private_key` from the JSON key, the whole `-----BEGIN PRIVATE KEY-----` … `-----END PRIVATE KEY-----` block (pasting it with literal `\n` is fine too) |
+   | `EDGE_PRODUCT_ID` | the GUID from Partner Center |
+   | `EDGE_CLIENT_ID` | from the Publish API page |
+   | `EDGE_API_KEY` | from the Publish API page |
+
+4. Repo → **Settings → Secrets and variables → Actions → Variables** → new
+   repository variable `SUBMIT_TO_STORES` = `true`. Delete it to go back to
+   manual uploads; nothing else changes.
+
+## Releasing after that
+
+```bash
+# edit CHANGELOG.md, bump "version" in package.json, commit, then:
+git tag v1.1.0
+git push origin main v1.1.0
+```
+
+The Release workflow builds and publishes the GitHub release, then waits on
+the `stores` environment. Approve it under the run's **Review deployments**
+button. The submit job first checks the credentials without uploading
+(`submit:dry`), then uploads and submits. Chrome and Edge each review the
+version as usual and email you.
+
+## Local use (optional)
+
+```bash
+npm run submit:init    # interactive wizard, writes .env.submit (git-ignored)
+npm run submit:plan    # shows what would be sent, no network
+npm run submit:dry     # checks credentials, uploads nothing
+npm run submit         # uploads and submits
+```
+
+## If a credential leaks
+
+Revoke it at the source first, then replace the secret: delete the JSON key
+in Google Cloud (Service account → Keys) and create a new one; on Partner
+Center's Publish API page create a new API key. Deleting a commit is not
+enough once a repo is public.
+
+## Firefox
+
+Firefox is deliberately not automated yet. When you want it, generate an API
+key at https://addons.mozilla.org/developers/addon/api/key/, add
+`FIREFOX_JWT_ISSUER` and `FIREFOX_JWT_SECRET` to the environment, and change
+`--stores=chrome,edge` to `--stores=chrome,edge,firefox` in
+`.github/workflows/release.yml`. The source archive is already built and
+passed along automatically.
