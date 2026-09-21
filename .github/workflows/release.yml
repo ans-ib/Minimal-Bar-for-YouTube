@@ -88,6 +88,11 @@ jobs:
       EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
       EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+      # Firefox Add-ons (AMO API, JWT credentials)
+      FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+      FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+      # A store whose secrets are missing is skipped, not failed.
+      STORES: chrome,edge,firefox
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -109,7 +114,7 @@ jobs:
         run: cd web-ext-artifacts && sha256sum -c SHA256SUMS
 
       - name: Check the store credentials (no upload)
-        run: npm run submit:dry -- --stores=chrome,edge
+        run: npm run submit:dry -- --stores="$STORES"
 
       - name: Upload and submit for review
-        run: npm run submit -- --stores=chrome,edge
+        run: npm run submit -- --stores="$STORES"

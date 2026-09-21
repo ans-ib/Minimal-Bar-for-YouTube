@@ -102,7 +102,7 @@ have caught. Then check by hand on a YouTube video with chapters:
 5. Submit to the stores. Either upload by hand (Chromium zip to the Chrome Web
    Store and Edge Add-ons; Firefox zip plus the source archive to Firefox
    Add-ons, since Mozilla requires source for bundled code), or let the
-   release workflow submit to Chrome and Edge for you: with the repository
+   release workflow submit to Chrome, Edge and Firefox for you: with the repository
    variable `SUBMIT_TO_STORES` set to `true`, the workflow pauses at the
    `stores` environment for your approval, then uploads and submits. See
    "Automated submission" in `docs/store-listing.md`.

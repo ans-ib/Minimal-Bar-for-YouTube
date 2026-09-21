@@ -118,13 +118,15 @@ is needed because no user data is handled; you may still link one if you have it
 
 ---
 
-# Automated submission (Chrome and Edge, one command)
+# Automated submission (Chrome, Edge and Firefox, one command)
 
 Pushing a version tag builds the extension, publishes the GitHub release, and
-then uploads the same zip to the Chrome Web Store and Microsoft Edge Add-ons
-and submits it for review, using
+then uploads the zips to the Chrome Web Store, Microsoft Edge Add-ons and
+Firefox Add-ons and submits them for review, using
 [publish-browser-extension](https://github.com/aklinker1/publish-browser-extension).
-Each store's API can only update an item that already exists, which both do.
+Each store's API can only update an item that already exists, which all three
+do. A store whose credentials are missing is skipped, so they can be added one
+at a time.
 
 ## How the credentials are protected
 
@@ -176,7 +178,20 @@ need OAuth screens or refresh tokens.
 Edge API keys expire (the page shows when). Before that date, create a new key
 on the same page and update the `EDGE_API_KEY` secret.
 
-### 3. GitHub: the protected environment
+### 3. Firefox Add-ons: API credentials
+
+1. Sign in at https://addons.mozilla.org/developers/addon/api/key/ with the
+   account that owns the listing.
+2. Click **Generate new credentials**. It shows a **JWT issuer** (looks like
+   `user:12345:678`) and a **JWT secret**. Copy both; the secret is shown once.
+
+The add-on is identified by the ID already in the Firefox manifest
+(`minimal-bar-for-youtube@ans-ib.github.io`), so nothing else is needed. Each
+submission automatically includes the source archive and the reviewer notes in
+`scripts/amo-metadata.json` (test steps and build instructions), which Mozilla
+requires because the package is bundled.
+
+### 4. GitHub: the protected environment
 
 1. Repo → **Settings → Environments → New environment**, name it `stores`.
 2. Tick **Required reviewers** and add yourself. Optionally restrict
@@ -192,10 +207,16 @@ on the same page and update the `EDGE_API_KEY` secret.
    | `EDGE_PRODUCT_ID` | the GUID from Partner Center |
    | `EDGE_CLIENT_ID` | from the Publish API page |
    | `EDGE_API_KEY` | from the Publish API page |
+   | `FIREFOX_JWT_ISSUER` | from the AMO API key page |
+   | `FIREFOX_JWT_SECRET` | from the AMO API key page |
 
-4. Repo → **Settings → Secrets and variables → Actions → Variables** → new
-   repository variable `SUBMIT_TO_STORES` = `true`. Delete it to go back to
-   manual uploads; nothing else changes.
+4. Repo → **Settings → Secrets and variables → Actions**. Open the
+   **Variables** tab (not Secrets, and not the environment's own variables),
+   click **New repository variable**, name `SUBMIT_TO_STORES`, value `true`.
+   Delete it to go back to manual uploads; nothing else changes.
+
+   If a release run shows the submit job as *skipped*, this variable is
+   missing. Set it, then submit that release by hand with the workflow below.
 
 ## Releasing after that
 
@@ -208,8 +229,17 @@ git push origin main v1.1.0
 The Release workflow builds and publishes the GitHub release, then waits on
 the `stores` environment. Approve it under the run's **Review deployments**
 button. The submit job first checks the credentials without uploading
-(`submit:dry`), then uploads and submits. Chrome and Edge each review the
-version as usual and email you.
+(`submit:dry`), then uploads and submits. Each store reviews the version as
+usual and emails you.
+
+## Submitting an existing release by hand
+
+Actions tab → **Submit a release to the stores** → **Run workflow**. Leave the
+tag empty for the latest release or type one, e.g. `v1.0.1`. The workflow
+downloads that release's zips, verifies them against the `SHA256SUMS` file
+recorded at build time, checks the credentials, and submits. Use it when the
+automatic job was skipped, or to resubmit the same build after a store
+rejection once the listing is fixed.
 
 ## Local use (optional)
 
@@ -226,12 +256,3 @@ Revoke it at the source first, then replace the secret: delete the JSON key
 in Google Cloud (Service account → Keys) and create a new one; on Partner
 Center's Publish API page create a new API key. Deleting a commit is not
 enough once a repo is public.
-
-## Firefox
-
-Firefox is deliberately not automated yet. When you want it, generate an API
-key at https://addons.mozilla.org/developers/addon/api/key/, add
-`FIREFOX_JWT_ISSUER` and `FIREFOX_JWT_SECRET` to the environment, and change
-`--stores=chrome,edge` to `--stores=chrome,edge,firefox` in
-`.github/workflows/release.yml`. The source archive is already built and
-passed along automatically.

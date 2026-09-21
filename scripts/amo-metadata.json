@@ -1,0 +1,5 @@
+{
+  "version": {
+    "approval_notes": "No account or setup is needed. To test: open a YouTube video with chapters (e.g. https://www.youtube.com/watch?v=rfscVS0vtbw), play it and keep the mouse still ~3 s so the controls hide; a thin progress bar with the chapter name and time appears along the bottom of the player. Roll the mouse wheel over the video to change the volume. The toolbar popup changes the settings live.\n\nSource code is attached. Build: Node.js 20 or newer, then `npm ci` and `npm run build:firefox`. This creates dist/, which matches the uploaded package. The build bundles src/ with esbuild and compiles the popup CSS with Tailwind CSS (see scripts/build.js and README, section 'Build it yourself').\n\ncontent/inject.js runs in the page world solely to call the YouTube player's own getVolume/setVolume API so the native controls stay in sync. No network requests, no remote code, no data collection."
+  }
+}

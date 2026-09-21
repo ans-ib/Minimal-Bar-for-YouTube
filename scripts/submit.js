@@ -93,6 +93,9 @@ const STORES = {
     flags: () => {
       const f = ['--firefox-zip', artifact('firefox'), '--firefox-sources-zip', artifact('source')];
       if (!has('FIREFOX_EXTENSION_ID')) f.push('--firefox-extension-id', firefoxManifest.browser_specific_settings.gecko.id);
+      // Reviewer notes with the build instructions Mozilla requires for bundled code.
+      const metadata = path.join('scripts', 'amo-metadata.json');
+      if (fs.existsSync(path.join(root, metadata))) f.push('--firefox-amo-metadata-file', metadata);
       return f;
     }
   },

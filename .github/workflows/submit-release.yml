@@ -1,0 +1,87 @@
+name: Submit a release to the stores
+
+# Manual submission of an existing GitHub release to Chrome and Edge.
+# Use it when the automatic submit job of the Release workflow was skipped
+# (the SUBMIT_TO_STORES repository variable was not set), or to resubmit the
+# same build after a store rejected it and the listing was fixed.
+#
+# It downloads the zips attached to the release, verifies them against the
+# SHA256SUMS recorded at build time, checks the credentials, then submits.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to submit, e.g. v1.0.1. Leave empty for the latest release."
+        required: false
+        default: ""
+      stores:
+        description: "Stores, comma-separated"
+        required: false
+        default: "chrome,edge,firefox"
+
+permissions: {}
+
+jobs:
+  submit:
+    name: Submit ${{ inputs.tag || 'latest release' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: stores
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # Inputs go through env vars, never straight into a shell line.
+      INPUT_TAG: ${{ inputs.tag }}
+      INPUT_STORES: ${{ inputs.stores }}
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+      CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+      CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+      FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+      FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve the release tag
+        run: |
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ]; then
+            tag="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)"
+          fi
+          echo "Submitting release $tag"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+
+      # Check out the tagged commit so package.json carries the release version
+      # that the zip file names are derived from.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Download the release assets
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern '*.zip' --pattern 'SHA256SUMS' --dir web-ext-artifacts
+
+      - name: Verify the assets against the build-time checksums
+        run: cd web-ext-artifacts && sha256sum -c SHA256SUMS
+
+      - name: Check the store credentials (no upload)
+        run: npm run submit:dry -- --stores="$INPUT_STORES"
+
+      - name: Upload and submit for review
+        run: npm run submit -- --stores="$INPUT_STORES"

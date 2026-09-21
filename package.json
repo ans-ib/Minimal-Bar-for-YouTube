@@ -2,6 +2,16 @@
   "name": "minimal-bar-for-youtube",
   "version": "1.0.1",
   "description": "Minimal progress bar with chapter and time labels while YouTube's controls are hidden, plus mouse-wheel volume over the video.",
+  "keywords": [
+    "youtube",
+    "browser-extension",
+    "webextension",
+    "chrome-extension",
+    "firefox-addon",
+    "edge-addon",
+    "progress-bar",
+    "volume-control"
+  ],
   "private": true,
   "type": "module",
   "license": "AGPL-3.0-or-later",

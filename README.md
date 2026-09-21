@@ -6,6 +6,10 @@
   [![CI](https://img.shields.io/github/actions/workflow/status/ans-ib/Minimal-Bar-for-YouTube/ci.yml?style=flat&logo=githubactions&logoColor=white&label=CI)](https://github.com/ans-ib/Minimal-Bar-for-YouTube/actions/workflows/ci.yml)
   ![License](https://img.shields.io/github/license/ans-ib/Minimal-Bar-for-YouTube?label=&style=flat&logo=opensourceinitiative&logoColor=white&color=3da639)
 
+  [![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/oplglmmjagffpojanjhnjboogdokljld?style=flat&label=Chrome&logo=googlechrome&logoColor=white&color=4285F4)](https://chromewebstore.google.com/detail/minimal-bar-for-youtube/oplglmmjagffpojanjhnjboogdokljld)
+  [![Firefox Add-ons version](https://img.shields.io/amo/v/minimal-bar-for-youtube?style=flat&label=Firefox&logo=firefoxbrowser&logoColor=white&color=FF7139)](https://addons.mozilla.org/firefox/addon/minimal-bar-for-youtube/)
+  [![Edge Add-ons version](https://img.shields.io/badge/dynamic/json?style=flat&label=Edge&prefix=v&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fllcgbejikjgnfjobllkdmiekmkccdefd&color=0078D7)](https://microsoftedge.microsoft.com/addons/detail/minimal-bar-for-youtube/llcgbejikjgnfjobllkdmiekmkccdefd)
+
 </div>
 
 <div align="center">
@@ -14,7 +18,7 @@
 
   # Minimal Bar for YouTube
 
-  A browser extension for Chrome, Brave, Edge and other Chromium browsers, and for Firefox, that keeps a minimal progress bar on screen while YouTube's controls are hidden and lets you change the volume with the mouse wheel.
+  A browser extension for **Chrome, Firefox and Edge**, plus Brave and other Chromium browsers, that keeps a minimal progress bar on screen while YouTube's controls are hidden and lets you change the volume with the mouse wheel.
 
 </div>
 
@@ -23,17 +27,18 @@
   ## Download
 
   [![Get it on the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Get%20the%20extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/minimal-bar-for-youtube/oplglmmjagffpojanjhnjboogdokljld)
+  [![Get it for Firefox](https://img.shields.io/badge/Firefox-Get%20the%20add--on-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/firefox/addon/minimal-bar-for-youtube/)
   [![Get it for Microsoft Edge](https://img.shields.io/badge/Microsoft%20Edge-Get%20the%20add--on-0078D7?style=for-the-badge)](https://microsoftedge.microsoft.com/addons/detail/minimal-bar-for-youtube/llcgbejikjgnfjobllkdmiekmkccdefd)
 
-  Brave, Opera, Vivaldi and other Chromium browsers install from the Chrome Web Store.
-
-  **Firefox Add-ons:** in review, coming soon. Until then, grab the Firefox zip from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) or [build it yourself](#build-it-yourself).
+  Brave, Opera, Vivaldi and other Chromium browsers install from the Chrome Web Store. Firefox needs version 142 or newer.
 
 </div>
 
-**Manual install in a Chromium browser:** unzip the `chromium` zip from the [releases page](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest), open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
+Prefer not to use a store? Every [release](https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/latest) has the same zips, with a `SHA256SUMS` file to verify them, or you can [build it yourself](#build-it-yourself).
 
-**Firefox (142 or newer):** open `about:debugging` → *This Firefox* → *Load Temporary Add-on* and pick the `firefox` zip. Temporary add-ons are removed when Firefox restarts; the store version will be permanent.
+**Manual install in a Chromium browser:** unzip the `chromium` zip, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder.
+
+**Manual install in Firefox:** open `about:debugging` → *This Firefox* → *Load Temporary Add-on* and pick the `firefox` zip. Temporary add-ons are removed when Firefox restarts; the version from Firefox Add-ons is permanent.
 
 ---
 
