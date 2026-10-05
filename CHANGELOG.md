@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-05
+
 ### Added
 - Volume step setting: choose how much one wheel notch changes the volume, from 1% to 20%.
 
@@ -36,6 +38,7 @@ All notable changes to this project are documented here. The format follows
 - The chapter label no longer shows YouTube's "In this video" placeholder on
   videos without creator chapters.
 
-[Unreleased]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ans-ib/Minimal-Bar-for-YouTube/releases/tag/v1.0.0
