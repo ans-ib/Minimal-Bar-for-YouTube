@@ -36,7 +36,7 @@ function getVideoId() {
 function startScrollVolume() {
   if (scrollVolume || !currentVideo || !settings || !settings.scrollVolume) return;
   try {
-    scrollVolume = new ScrollVolumeControl(currentVideo, currentPlayer);
+    scrollVolume = new ScrollVolumeControl(currentVideo, currentPlayer, settings.volumeStep);
     scrollVolume.init();
   } catch (e) {
     console.error('[YTE] Failed to initialise scroll volume', e);
@@ -92,6 +92,7 @@ function applySettings(next) {
   YteSettings.applyToDocument(settings);
   if (settings.scrollVolume) startScrollVolume();
   else stopScrollVolume();
+  if (scrollVolume) scrollVolume.setStep(settings.volumeStep);
 }
 
 function initialize() {

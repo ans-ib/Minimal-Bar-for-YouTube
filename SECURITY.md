@@ -11,7 +11,7 @@ the changelog unless you prefer otherwise.
 ## Scope
 
 The extension runs only on `www.youtube.com`, makes no network requests, has
-no background process, and stores nothing but its three settings. Anything
+no background process, and stores nothing but its settings. Anything
 that contradicts this, such as a way to make it read or send page data, is in
 scope.
 

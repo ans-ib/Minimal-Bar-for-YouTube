@@ -4,7 +4,7 @@
 
 ## What the extension does with data
 
-- **Settings.** Your three preferences (wheel volume on/off, bar thickness,
+- **Settings.** Your preferences (wheel volume on/off, volume step, bar thickness,
   label text size) are saved with the browser's `storage.sync` API. They stay
   inside your browser profile and, if you have browser sync enabled, are synced
   by your browser vendor between your own devices. The extension never sends

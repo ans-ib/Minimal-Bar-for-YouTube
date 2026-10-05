@@ -49,12 +49,12 @@ Prefer not to use a store? Every [release](https://github.com/ans-ib/Minimal-Bar
 </div>
 
 - **Minimal progress bar.** When YouTube hides its controls, a thin segmented progress bar (one segment per chapter) stays visible along the bottom edge of the player, with the current chapter name and the time in small labels. It fades out again the moment YouTube's own controls come back, and during ads.
-- **Wheel volume.** Roll the mouse wheel anywhere over the video to change the volume in 5% steps. A small indicator shows the new level. Trackpads are smoothed so a swipe doesn't jump straight to 0 or 100, scrolling up from mute unmutes, and the new volume is remembered the next time YouTube opens.
-- **Settings.** Click the toolbar icon to switch wheel volume off, make the bar thicker, or make the labels larger. Changes apply instantly and sync with your browser profile.
+- **Wheel volume.** Roll the mouse wheel anywhere over the video to change the volume, in steps you choose (5% by default). A small indicator shows the new level. Trackpads are smoothed so a swipe doesn't jump straight to 0 or 100, scrolling up from mute unmutes, and the new volume is remembered the next time YouTube opens.
+- **Settings.** Click the toolbar icon to switch wheel volume off, set how much each wheel notch changes the volume, make the bar thicker, or make the labels larger. Changes apply instantly and sync with your browser profile.
 
 The extension drives YouTube's own player, so the native volume slider and mute button always stay in sync. It works in normal, theater and fullscreen modes.
 
-**Privacy:** no data is collected or transmitted. There is no background process and no network access. The only thing stored is your three settings. It runs only on `www.youtube.com`.
+**Privacy:** no data is collected or transmitted. There is no background process and no network access. The only thing stored is your settings. It runs only on `www.youtube.com`.
 
 ---
 

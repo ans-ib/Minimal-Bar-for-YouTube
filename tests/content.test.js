@@ -25,11 +25,12 @@ const video = { duration: NaN, currentTime: 0, volume: 0.5, muted: false, isConn
 const player = fakeEl({ querySelector: (s) => (s === 'video.html5-main-video' ? video : null) });
 const docListeners = {};
 const cssVars = {};
+const htmlAttrs = {};
 globalThis.window = { location: { href: 'https://www.youtube.com/watch?v=abc', pathname: '/watch' } };
 globalThis.document = {
   readyState: 'complete',
   body: {},
-  documentElement: { style: { setProperty: (k, v) => { cssVars[k] = v; } }, setAttribute() {}, getAttribute: () => null },
+  documentElement: { style: { setProperty: (k, v) => { cssVars[k] = v; } }, setAttribute: (k, v) => { htmlAttrs[k] = v; }, getAttribute: () => null },
   getElementById: (id) => (id === 'movie_player' ? player : null),
   addEventListener: (t, f) => { docListeners[t] = f; },
   removeEventListener: (t) => { delete docListeners[t]; },
@@ -71,6 +72,21 @@ test('size changes apply live without touching wheel volume', async () => {
   await tick();
   assert.equal(cssVars['--yte-bar-height'], '8px');
   assert.equal(hasWheel(), false);
+});
+
+test('the volume step setting reaches the wheel handler, live', async () => {
+  await chrome.storage.sync.set({ scrollVolume: true, volumeStep: 10 });
+  await tick();
+  // The fake page has no bridge, so the handler reads 50 from the <video>.
+  const notchUp = () => player.listeners.wheel({ deltaY: -100, deltaMode: 0, ctrlKey: false, metaKey: false, preventDefault() {}, stopPropagation() {} });
+  notchUp();
+  assert.equal(htmlAttrs['data-yte-set-volume'], '60');
+  await chrome.storage.sync.set({ volumeStep: 2 });
+  await tick();
+  notchUp();
+  assert.equal(htmlAttrs['data-yte-set-volume'], '52');
+  await chrome.storage.sync.set({ volumeStep: 5 });
+  await tick();
 });
 
 test('navigating to another video re-initialises both features', async () => {

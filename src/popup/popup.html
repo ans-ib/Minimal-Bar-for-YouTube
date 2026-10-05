@@ -16,9 +16,18 @@
     <section class="flex items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">
       <div class="min-w-0">
         <label for="scrollVolume" class="cursor-pointer font-medium">Scroll to change volume</label>
-        <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">Mouse wheel over the video adjusts volume in 5% steps.</p>
+        <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">Roll the mouse wheel over the video to adjust the volume.</p>
       </div>
       <input type="checkbox" id="scrollVolume" class="switch" role="switch">
+    </section>
+
+    <section class="border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">
+      <div class="mb-1.5 flex items-baseline justify-between">
+        <label for="volumeStep" class="cursor-pointer font-medium">Volume step</label>
+        <output id="volumeStepValue" for="volumeStep" class="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">5%</output>
+      </div>
+      <input type="range" id="volumeStep" step="1" class="range">
+      <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">How much one notch of the wheel changes the volume.</p>
     </section>
 
     <section class="border-b border-neutral-200 px-4 py-3 dark:border-neutral-700">

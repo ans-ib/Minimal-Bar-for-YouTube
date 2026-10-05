@@ -18,7 +18,8 @@
  * native volume slider and mute state stay in sync. Values are exchanged via
  * attributes on <html>, which both worlds can read in every browser.
  *
- * This file touches nothing but the player's volume. No network, no storage.
+ * This file touches nothing but the player's volume and the storage record
+ * YouTube itself uses to remember it. No network.
  */
 (function () {
   'use strict';
@@ -51,6 +52,73 @@
       /* Storage blocked by the browser; the volume just won't persist. */
     }
   }
+
+  /** Parses a stored volume record; null if absent, malformed or expired. */
+  function readRecord(storage) {
+    try {
+      var raw = storage.getItem(VOLUME_KEY);
+      if (!raw) return null;
+      var record = JSON.parse(raw);
+      var data = JSON.parse(record.data);
+      if (typeof data.volume !== 'number' || !isFinite(data.volume)) return null;
+      if (typeof record.expiration === 'number' && record.expiration < Date.now()) return null;
+      return { raw: raw, creation: Number(record.creation) || 0, volume: data.volume, muted: !!data.muted };
+    } catch (err) {
+      return null;
+    }
+  }
+
+  /**
+   * YouTube keeps one copy of the volume per tab (sessionStorage) and one
+   * shared by all tabs (localStorage). When a player starts it prefers the
+   * tab's own copy even if the shared one is newer, so a volume set in another
+   * tab, or after this tab was last used, was silently ignored.
+   *
+   * @returns the shared record when it is newer than this tab's copy, else null
+   */
+  function newerSharedRecord() {
+    var shared = readRecord(window.localStorage);
+    if (!shared) return null;
+    var own = readRecord(window.sessionStorage);
+    return !own || shared.creation > own.creation ? shared : null;
+  }
+
+  /** Makes the newest record this tab's copy. Returns it, or null if already current. */
+  function adoptNewestRecord() {
+    var shared = newerSharedRecord();
+    if (!shared) return null;
+    try {
+      window.sessionStorage.setItem(VOLUME_KEY, shared.raw);
+    } catch (err) {
+      /* Storage blocked; the player keeps whatever it has. */
+    }
+    return shared;
+  }
+
+  /** For a player that is already running: apply a newer volume directly. */
+  function syncRunningPlayer() {
+    var record = adoptNewestRecord();
+    var player = getPlayer();
+    if (!record || !player) return;
+    try {
+      if (player.getVolume() !== record.volume) player.setVolume(record.volume);
+      if (record.muted && !player.isMuted()) player.mute();
+      else if (!record.muted && player.isMuted()) player.unMute();
+    } catch (err) {
+      /* Player not ready; it will read the adopted record when it starts. */
+    }
+  }
+
+  // This script runs at document_start, before YouTube creates its player, so
+  // adopting here is enough for a fresh page load or a reload.
+  adoptNewestRecord();
+  // The player survives in-page navigation and back/forward cache restores,
+  // so those need the running player updated. Other tabs are never changed
+  // while they play; they pick the new volume up when their next video starts.
+  document.addEventListener('yt-navigate-finish', syncRunningPlayer);
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) syncRunningPlayer();
+  });
 
   document.addEventListener('yte-volume-set', function () {
     var player = getPlayer();

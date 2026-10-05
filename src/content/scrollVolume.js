@@ -18,8 +18,8 @@
  * in sync.
  */
 export class ScrollVolumeControl {
-  /** Percent per step. */
-  static STEP = 5;
+  /** Percent per wheel notch when no setting is supplied. */
+  static DEFAULT_STEP = 5;
   /**
    * A delta at or above this is treated as one mouse-wheel notch. Smaller
    * deltas (trackpads, some mice on macOS) are accumulated so a swipe moves
@@ -39,9 +39,16 @@ export class ScrollVolumeControl {
     high: ['M3,9V15H7L12,20V4L7,9H3M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.03C15.5,15.29 16.5,13.77 16.5,12M19,12C19,15.17 16.89,17.85 14,18.71V20.77C17.97,19.86 21,16.28 21,12C21,7.72 17.97,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12Z']
   };
 
-  constructor(video, player) {
+  /**
+   * @param {HTMLVideoElement} video
+   * @param {HTMLElement} player
+   * @param {number} [step] percent per wheel notch (the "volume step" setting)
+   */
+  constructor(video, player, step) {
     this.video = video;
     this.player = player;
+    this.step = ScrollVolumeControl.DEFAULT_STEP;
+    this.setStep(step);
     this.feedbackElement = null;
     this.feedbackTimeout = 0;
     this.wheelAccumulator = 0;
@@ -49,6 +56,12 @@ export class ScrollVolumeControl {
     this.icons = {};
     this.textEl = null;
     this.handleWheel = this.handleWheel.bind(this);
+  }
+
+  /** Changes the percent moved per wheel notch; takes effect on the next scroll. */
+  setStep(step) {
+    const n = Number(step);
+    if (Number.isFinite(n) && n >= 1) this.step = Math.min(100, Math.round(n));
   }
 
   /**
@@ -114,9 +127,9 @@ export class ScrollVolumeControl {
     let next;
     if (steps > 0) {
       // Scrolling up from mute unmutes at the previous level plus one step.
-      next = Math.min(100, (state.muted ? state.volume : shown) + steps * ScrollVolumeControl.STEP);
+      next = Math.min(100, (state.muted ? state.volume : shown) + steps * this.step);
     } else {
-      next = Math.max(0, shown + steps * ScrollVolumeControl.STEP);
+      next = Math.max(0, shown + steps * this.step);
     }
 
     if (next !== shown) this.setVolume(next);

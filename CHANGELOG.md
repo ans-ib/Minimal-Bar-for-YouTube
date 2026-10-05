@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Volume step setting: choose how much one wheel notch changes the volume, from 1% to 20%.
+
+### Fixed
+- The volume was sometimes not remembered when more than one YouTube tab had been open. The most recently set volume now applies whenever a video starts.
+
 ## [1.0.1] - 2026-09-20
 
 ### Changed

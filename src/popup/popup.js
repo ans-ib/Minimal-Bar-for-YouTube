@@ -19,8 +19,9 @@ import { YteSettings } from '../common/settings.js';
 const $ = (id) => document.getElementById(id);
 const scrollVolume = $('scrollVolume');
 const sliders = {
-  barHeight: { input: $('barHeight'), output: $('barHeightValue') },
-  labelFontSize: { input: $('labelFontSize'), output: $('labelFontSizeValue') }
+  volumeStep: { input: $('volumeStep'), output: $('volumeStepValue'), unit: '%' },
+  barHeight: { input: $('barHeight'), output: $('barHeightValue'), unit: ' px' },
+  labelFontSize: { input: $('labelFontSize'), output: $('labelFontSizeValue'), unit: ' px' }
 };
 const status = $('status');
 let statusTimer = 0;
@@ -35,8 +36,10 @@ function render(settings) {
   scrollVolume.checked = settings.scrollVolume;
   for (const key of Object.keys(sliders)) {
     sliders[key].input.value = settings[key];
-    sliders[key].output.textContent = settings[key] + ' px';
+    sliders[key].output.textContent = settings[key] + sliders[key].unit;
   }
+  // The step only matters while wheel volume is on.
+  sliders.volumeStep.input.disabled = !settings.scrollVolume;
 }
 
 function flash(text) {
@@ -54,11 +57,14 @@ async function save(partial) {
   }
 }
 
-scrollVolume.addEventListener('change', () => save({ scrollVolume: scrollVolume.checked }));
+scrollVolume.addEventListener('change', () => {
+  sliders.volumeStep.input.disabled = !scrollVolume.checked;
+  save({ scrollVolume: scrollVolume.checked });
+});
 
 for (const key of Object.keys(sliders)) {
-  const { input, output } = sliders[key];
-  input.addEventListener('input', () => { output.textContent = input.value + ' px'; });
+  const { input, output, unit } = sliders[key];
+  input.addEventListener('input', () => { output.textContent = input.value + unit; });
   input.addEventListener('change', () => save({ [key]: Number(input.value) }));
 }
 

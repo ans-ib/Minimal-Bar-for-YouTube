@@ -107,3 +107,40 @@ test('the indicator shows the value that was set', () => {
   assert.equal(ctl.textEl.textContent, '55%');
   assert.ok(ctl.icons.medium.classList.contains('yte-active'));
 });
+
+test('the step can be changed while running and applies to the next notch', () => {
+  reset(50);
+  ctl.setStep(10);
+  wheel(-100); wheel(100); wheel(100);
+  assert.deepEqual(setCalls, [60, 50, 40]);
+  ctl.setStep(1);
+  reset(50);
+  wheel(-100); wheel(-100);
+  assert.deepEqual(setCalls, [51, 52]);
+  ctl.setStep(5);
+});
+
+test('a step that does not divide 100 still clamps cleanly at the ends', () => {
+  ctl.setStep(15);
+  reset(95); wheel(-100);
+  assert.deepEqual(setCalls, [100]);
+  reset(10); wheel(100);
+  assert.deepEqual(setCalls, [0]);
+  ctl.setStep(5);
+});
+
+test('trackpad accumulation uses the configured step too', () => {
+  ctl.setStep(2);
+  reset(50);
+  for (let i = 0; i < 20; i++) wheel(-4);
+  assert.deepEqual(setCalls, [52, 54]);
+  ctl.setStep(5);
+});
+
+test('invalid steps are ignored and the constructor accepts one', () => {
+  ctl.setStep(0); ctl.setStep(-3); ctl.setStep('x'); ctl.setStep(undefined);
+  assert.equal(ctl.step, 5);
+  const other = new ScrollVolumeControl({ volume: 0.5, muted: false }, fakeEl(), 12);
+  assert.equal(other.step, 12);
+  assert.equal(new ScrollVolumeControl({ volume: 0.5, muted: false }, fakeEl()).step, 5);
+});

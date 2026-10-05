@@ -29,7 +29,7 @@ Everything below is ready to paste into the Developer Dashboard. Anything in
 >
 > **Minimal progress bar.** When YouTube hides its controls, a thin progress bar stays visible along the bottom edge of the video. It is split into the video's chapters, and the current chapter name and time appear as small unobtrusive labels. Move the mouse and YouTube's normal controls come back exactly as before.
 >
-> **Wheel volume.** Roll the mouse wheel anywhere over the video to change the volume in 5% steps. A small indicator shows the new level. Trackpads are handled smoothly, scrolling up from mute unmutes, and the new volume is remembered the next time you open YouTube.
+> **Wheel volume.** Roll the mouse wheel anywhere over the video to change the volume, in steps you choose (5% by default). A small indicator shows the new level. Trackpads are handled smoothly, scrolling up from mute unmutes, and the new volume is remembered the next time you open YouTube.
 >
 > **Your way.** Click the toolbar icon to switch wheel volume off, make the bar thicker, or make the chapter and time labels larger. Changes apply instantly.
 >
@@ -62,7 +62,7 @@ Everything below is ready to paste into the Developer Dashboard. Anything in
 
 **Permission justification — `storage`:**
 
-> Stores the user's three settings (wheel volume on/off, bar thickness, label text size) so they persist between sessions. No other data is stored.
+> Stores the user's settings (wheel volume on/off, volume step, bar thickness, label text size) so they persist between sessions. No other data is stored.
 
 **Are you using remote code?** No. All code is packaged in the extension.
 

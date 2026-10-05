@@ -25,8 +25,22 @@ test('normalize(null) returns the defaults', () => {
 
 test('normalize clamps and rounds numeric settings', () => {
   assert.deepEqual(
-    YteSettings.normalize({ barHeight: 99, labelFontSize: 3.6, scrollVolume: false }),
-    { scrollVolume: false, barHeight: 12, labelFontSize: 10 }
+    YteSettings.normalize({ barHeight: 99, labelFontSize: 3.6, scrollVolume: false, volumeStep: 2.4 }),
+    { scrollVolume: false, volumeStep: 2, barHeight: 12, labelFontSize: 10 }
+  );
+});
+
+test('the volume step defaults to 5 and stays within 1 to 20', () => {
+  assert.equal(YteSettings.DEFAULTS.volumeStep, 5);
+  assert.equal(YteSettings.normalize({ volumeStep: 0 }).volumeStep, 1);
+  assert.equal(YteSettings.normalize({ volumeStep: 500 }).volumeStep, 20);
+  assert.equal(YteSettings.normalize({ volumeStep: 'loud' }).volumeStep, 5);
+});
+
+test('settings saved by an older version without a volume step still load', () => {
+  assert.deepEqual(
+    YteSettings.normalize({ scrollVolume: true, barHeight: 4, labelFontSize: 14 }),
+    { scrollVolume: true, volumeStep: 5, barHeight: 4, labelFontSize: 14 }
   );
 });
 
@@ -41,7 +55,8 @@ test('load with empty storage returns the defaults', async () => {
 test('save merges partial updates', async () => {
   await YteSettings.save({ barHeight: 6 });
   await YteSettings.save({ scrollVolume: false });
-  assert.deepEqual(await YteSettings.load(), { scrollVolume: false, barHeight: 6, labelFontSize: 12 });
+  await YteSettings.save({ volumeStep: 10 });
+  assert.deepEqual(await YteSettings.load(), { scrollVolume: false, volumeStep: 10, barHeight: 6, labelFontSize: 12 });
 });
 
 test('applyToDocument writes the CSS variables', async () => {

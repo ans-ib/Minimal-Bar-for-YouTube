@@ -27,16 +27,18 @@ function storageApi() {
 export const YteSettings = {
   DEFAULTS: Object.freeze({
     scrollVolume: true,   // mouse wheel over the video changes volume
+    volumeStep: 5,        // percent the volume moves per wheel notch
     barHeight: 3,         // px, thickness of the minimal progress bar
     labelFontSize: 12     // px, chapter / time label text size
   }),
 
   LIMITS: Object.freeze({
+    volumeStep: [1, 20],
     barHeight: [1, 12],
     labelFontSize: [10, 24]
   }),
 
-  /** @returns {{scrollVolume: boolean, barHeight: number, labelFontSize: number}} */
+  /** @returns {{scrollVolume: boolean, volumeStep: number, barHeight: number, labelFontSize: number}} */
   normalize(raw) {
     const out = Object.assign({}, this.DEFAULTS);
     if (!raw || typeof raw !== 'object') return out;
