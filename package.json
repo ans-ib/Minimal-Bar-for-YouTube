@@ -49,8 +49,8 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "esbuild": "^0.28.2",
-    "publish-browser-extension": "^6.1.1",
+    "publish-browser-extension": "^6.2.0",
     "tailwindcss": "^4.3.3",
-    "web-ext": "^10.6.0"
+    "web-ext": "^10.7.0"
   }
 }
