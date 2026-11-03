@@ -20,6 +20,7 @@ const record = (volume, muted, creation, expiration = Date.now() + 30 * DAY) =>
 
 const docHandlers = {};
 const winHandlers = {};
+const winOptions = {};
 let vol = 50;
 let muted = false;
 let playerPresent = true;
@@ -43,7 +44,7 @@ globalThis.document = {
 globalThis.window = {
   localStorage: local,
   sessionStorage: session,
-  addEventListener: (t, f) => { winHandlers[t] = f; }
+  addEventListener: (t, f, o) => { winHandlers[t] = f; winOptions[t] = o; }
 };
 
 // State before the script loads: this tab remembers 50 from long ago, while
@@ -142,4 +143,54 @@ test('a missing attribute is ignored', () => {
 test('volume-get publishes the current state', () => {
   docHandlers['yte-volume-get']();
   assert.deepEqual(JSON.parse(attrs['data-yte-volume']), { volume: 65, muted: false });
+});
+
+// ---- Wheel interceptor ----
+const wheelEvent = (opts = {}) => {
+  const inPlayer = opts.inPlayer !== false;
+  const inGrid = !!opts.inGrid;
+  const ev = {
+    deltaY: opts.deltaY ?? 100, deltaMode: 0, ctrlKey: !!opts.ctrl, metaKey: false,
+    prevented: false, stopped: false,
+    target: { closest: (sel) => (sel === '#movie_player' ? (inPlayer ? {} : null) : sel === '.ytp-fullscreen-grid' ? (inGrid ? {} : null) : null) },
+    preventDefault() { this.prevented = true; },
+    stopImmediatePropagation() { this.stopped = true; }
+  };
+  return ev;
+};
+let forwarded = 0;
+globalThis.CustomEvent = class { constructor(type) { this.type = type; } };
+document.dispatchEvent = (e) => { if (e.type === 'yte-wheel') forwarded++; };
+
+test('the interceptor is registered on window in the capture phase', () => {
+  assert.equal(typeof winHandlers.wheel, 'function');
+  assert.equal(winOptions.wheel.capture, true);
+  assert.equal(winOptions.wheel.passive, false);
+});
+
+test('with wheel volume off, wheels pass through to YouTube untouched', () => {
+  delete attrs['data-yte-wheel'];
+  const ev = wheelEvent();
+  winHandlers.wheel(ev);
+  assert.equal(ev.prevented || ev.stopped, false);
+});
+
+test('with wheel volume on, a wheel over the player is stopped before YouTube and forwarded', () => {
+  attrs['data-yte-wheel'] = 'on';
+  forwarded = 0;
+  const ev = wheelEvent({ deltaY: 100 });
+  winHandlers.wheel(ev);
+  assert.equal(ev.prevented, true);
+  assert.equal(ev.stopped, true, 'YouTube must not see it, or fullscreen scrolls to suggestions');
+  assert.equal(forwarded, 1);
+  assert.equal(attrs['data-yte-wheel-event'], '100,0');
+});
+
+test('wheels outside the player, ctrl+wheel and an open suggestions grid pass through', () => {
+  forwarded = 0;
+  for (const ev of [wheelEvent({ inPlayer: false }), wheelEvent({ ctrl: true }), wheelEvent({ inGrid: true })]) {
+    winHandlers.wheel(ev);
+    assert.equal(ev.prevented || ev.stopped, false);
+  }
+  assert.equal(forwarded, 0);
 });

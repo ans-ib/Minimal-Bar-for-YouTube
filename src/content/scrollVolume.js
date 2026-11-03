@@ -56,6 +56,7 @@ export class ScrollVolumeControl {
     this.icons = {};
     this.textEl = null;
     this.handleWheel = this.handleWheel.bind(this);
+    this.handleBridgeWheel = this.handleBridgeWheel.bind(this);
   }
 
   /** Changes the percent moved per wheel notch; takes effect on the next scroll. */
@@ -99,7 +100,8 @@ export class ScrollVolumeControl {
   handleWheel(event) {
     // Leave pinch-zoom (ctrl+wheel) and browser zoom alone.
     if (event.ctrlKey || event.metaKey) return;
-    if (!this.player.matches(':hover')) return;
+    // The interceptor already checked the target is inside the player.
+    if (!event.fromBridge && !this.player.matches(':hover')) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -207,13 +209,40 @@ export class ScrollVolumeControl {
     }, ScrollVolumeControl.FEEDBACK_MS);
   }
 
+  /**
+   * Wheel forwarded by the page-world interceptor in inject.js, which stops
+   * the event before YouTube sees it (otherwise fullscreen scrolls down to
+   * the suggestions grid). The event itself is already cancelled.
+   */
+  handleBridgeWheel() {
+    const raw = document.documentElement.getAttribute('data-yte-wheel-event') || '';
+    const [deltaY, deltaMode] = raw.split(',').map(Number);
+    if (!Number.isFinite(deltaY)) return;
+    this.handleWheel({
+      deltaY,
+      deltaMode: Number.isFinite(deltaMode) ? deltaMode : 0,
+      ctrlKey: false,
+      metaKey: false,
+      fromBridge: true,
+      preventDefault() {},
+      stopPropagation() {}
+    });
+  }
+
   init() {
     if (!this.player) return;
-    // passive: false so preventDefault() can stop the page from scrolling.
+    // Primary path: the page-world interceptor forwards wheels over the player.
+    document.addEventListener('yte-wheel', this.handleBridgeWheel);
+    document.documentElement.setAttribute('data-yte-wheel', 'on');
+    // Fallback if the interceptor is unavailable. passive: false so
+    // preventDefault() can stop the page from scrolling.
     this.player.addEventListener('wheel', this.handleWheel, { passive: false });
   }
 
   cleanup() {
+    document.removeEventListener('yte-wheel', this.handleBridgeWheel);
+    if (document.documentElement.removeAttribute) document.documentElement.removeAttribute('data-yte-wheel');
+    else document.documentElement.setAttribute('data-yte-wheel', 'off');
     if (this.player) this.player.removeEventListener('wheel', this.handleWheel);
     clearTimeout(this.feedbackTimeout);
     if (this.feedbackElement) this.feedbackElement.remove();

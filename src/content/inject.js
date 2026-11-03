@@ -120,6 +120,29 @@
     if (event.persisted) syncRunningPlayer();
   });
 
+  /**
+   * Wheel interceptor. In fullscreen, YouTube scrolls to its suggestions grid
+   * on wheel-down, and its listeners run before the content script's. This
+   * script runs at document_start, before YouTube's code, so a capturing
+   * listener on window here always sees the wheel first. While wheel volume is
+   * enabled (data-yte-wheel="on", set by the content script) a wheel over the
+   * player is stopped here and handed to the content script instead.
+   */
+  window.addEventListener('wheel', function (e) {
+    var html = document.documentElement;
+    if (html.getAttribute('data-yte-wheel') !== 'on') return;
+    if (e.ctrlKey || e.metaKey) return; // leave pinch-zoom and browser zoom alone
+    var target = e.target;
+    if (!target || typeof target.closest !== 'function') return;
+    if (!target.closest('#movie_player')) return;
+    // If the suggestions grid is already open, let it scroll normally.
+    if (target.closest('.ytp-fullscreen-grid')) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    html.setAttribute('data-yte-wheel-event', e.deltaY + ',' + e.deltaMode);
+    document.dispatchEvent(new CustomEvent('yte-wheel'));
+  }, { capture: true, passive: false });
+
   document.addEventListener('yte-volume-set', function () {
     var player = getPlayer();
     var raw = document.documentElement.getAttribute('data-yte-set-volume');

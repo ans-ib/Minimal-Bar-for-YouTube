@@ -17,11 +17,15 @@ import { fakeEl } from './helpers/fakeDom.js';
 let state = { volume: 50, muted: false };
 const setCalls = [];
 const attrs = {};
+const docListeners = {};
 globalThis.document = {
   documentElement: {
     setAttribute: (k, v) => { attrs[k] = v; },
-    getAttribute: (k) => (k in attrs ? attrs[k] : null)
+    getAttribute: (k) => (k in attrs ? attrs[k] : null),
+    removeAttribute: (k) => { delete attrs[k]; }
   },
+  addEventListener: (t, f) => { docListeners[t] = f; },
+  removeEventListener: (t) => { delete docListeners[t]; },
   createElement: fakeEl,
   createElementNS: () => fakeEl(),
   dispatchEvent(e) {
@@ -143,4 +147,35 @@ test('invalid steps are ignored and the constructor accepts one', () => {
   const other = new ScrollVolumeControl({ volume: 0.5, muted: false }, fakeEl(), 12);
   assert.equal(other.step, 12);
   assert.equal(new ScrollVolumeControl({ volume: 0.5, muted: false }, fakeEl()).step, 5);
+});
+
+test('init turns the page-world interceptor on and listens for forwarded wheels', () => {
+  assert.equal(attrs['data-yte-wheel'], 'on');
+  assert.equal(typeof docListeners['yte-wheel'], 'function');
+});
+
+test('a forwarded wheel changes the volume without needing :hover', () => {
+  reset(50);
+  const hoverless = fakeEl({ matches: () => false });
+  const c2 = new ScrollVolumeControl({ volume: 0.5, muted: false }, hoverless);
+  c2.init();
+  attrs['data-yte-wheel-event'] = '100,0';
+  docListeners['yte-wheel']();
+  assert.deepEqual(setCalls, [45]);
+  attrs['data-yte-wheel-event'] = '-3,1';
+  docListeners['yte-wheel']();
+  assert.deepEqual(setCalls, [45, 50]);
+  attrs['data-yte-wheel-event'] = 'garbage';
+  docListeners['yte-wheel']();
+  assert.deepEqual(setCalls, [45, 50]);
+  c2.cleanup();
+});
+
+test('cleanup turns the interceptor off', () => {
+  const c3 = new ScrollVolumeControl({ volume: 0.5, muted: false }, fakeEl());
+  c3.init();
+  c3.cleanup();
+  assert.equal(attrs['data-yte-wheel'], undefined);
+  assert.equal(docListeners['yte-wheel'], undefined);
+  ctl.init(); // restore the shared instance for any later test
 });
